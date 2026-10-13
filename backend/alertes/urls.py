@@ -1,7 +1,9 @@
 from rest_framework.routers import DefaultRouter
 
-from .views import AlerteViewSet
+from django.urls import path
+
+from .views import AlerteViewSet, MeteoView
 
 router = DefaultRouter()
 router.register('alertes', AlerteViewSet, basename='alerte')
-urlpatterns = router.urls
+urlpatterns = [path('meteo/', MeteoView.as_view(), name='meteo')] + router.urls
