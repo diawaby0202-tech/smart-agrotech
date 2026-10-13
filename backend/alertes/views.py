@@ -1,3 +1,4 @@
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -45,6 +46,9 @@ class MeteoView(APIView):
     """Prévisions sur 5 jours + risques détectés (RF-13, RF-14). ?ville=Thiès"""
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(parameters=[
+        OpenApiParameter('ville', str, description='Ville du Sénégal (défaut : Dakar)', default='Dakar'),
+    ])
     def get(self, request):
         ville = request.query_params.get('ville', 'Dakar')
         try:

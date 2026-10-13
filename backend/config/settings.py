@@ -140,3 +140,9 @@ CORS_ALLOWED_ORIGINS = ['http://localhost:5173']
 
 AUTH_USER_MODEL = 'utilisateurs.Utilisateur'
 WEATHER_API_KEY = env_config('WEATHER_API_KEY', default='')
+
+
+# Photos envoyées par les utilisateurs (annonces)
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

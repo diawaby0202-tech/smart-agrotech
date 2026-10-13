@@ -172,3 +172,53 @@ class GenerationAlertesTests(APITestCase):
         User.objects.filter(pk=self.u.pk).update(statut='valide')
         call_command('generer_alertes')
         self.assertEqual(Alerte.objects.count(), 1)
+
+
+# ---------- Rappels de culture (RF-09) ----------
+class RappelsCulturesTests(APITestCase):
+    def setUp(self):
+        self.u = creer('c@x.com')
+        self.today = date.today()
+
+    def parcelle(self, nom, **kw):
+        return Parcelle.objects.create(proprietaire=self.u, nom=nom, culture='Mil', superficie=1, **kw)
+
+    def test_recolte_proche(self):
+        self.parcelle('P1', date_recolte_prevue=self.today + timedelta(days=3), statut='croissance')
+        self.assertEqual(services._rappels_cultures(self.u), 1)
+        a = Alerte.objects.get()
+        self.assertEqual((a.type, a.niveau), ('culture', 'info'))
+
+    def test_recolte_lointaine_ignoree(self):
+        self.parcelle('P1', date_recolte_prevue=self.today + timedelta(days=60))
+        self.assertEqual(services._rappels_cultures(self.u), 0)
+
+    def test_recolte_en_retard(self):
+        self.parcelle('P1', date_recolte_prevue=self.today - timedelta(days=2), statut='croissance')
+        services._rappels_cultures(self.u)
+        self.assertEqual(Alerte.objects.get().niveau, 'attention')
+
+    def test_parcelle_recoltee_ignoree(self):
+        self.parcelle('P1', date_recolte_prevue=self.today + timedelta(days=1), statut='recoltee')
+        self.assertEqual(services._rappels_cultures(self.u), 0)
+
+    def test_rappel_semis(self):
+        self.parcelle('P1', date_semis=self.today + timedelta(days=2), statut='preparation')
+        self.assertEqual(services._rappels_cultures(self.u), 1)
+        self.assertIn('Semis', Alerte.objects.get().titre)
+
+    def test_pas_de_doublon(self):
+        self.parcelle('P1', date_recolte_prevue=self.today + timedelta(days=3))
+        services._rappels_cultures(self.u)
+        self.assertEqual(services._rappels_cultures(self.u), 0)
+
+    def test_inclus_dans_generer_alertes(self):
+        self.parcelle('P1', date_recolte_prevue=self.today + timedelta(days=3))
+        self.assertEqual(services.generer_alertes(self.u), 1)
+
+
+class DocumentationMeteoTests(APITestCase):
+    def test_parametre_ville_documente(self):
+        r = self.client.get('/api/schema/?format=json')
+        params = r.json()['paths']['/api/meteo/']['get']['parameters']
+        self.assertEqual(params[0]['name'], 'ville')
