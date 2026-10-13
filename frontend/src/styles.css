@@ -1434,14 +1434,14 @@ img {
 .filtres-module {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 14px;
   align-items: center;
 }
 .puce-filtre {
   font: inherit;
   font-size: 0.9rem;
   font-weight: 600;
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-radius: 999px;
   border: 1px solid var(--ardoise-200);
   background: var(--blanc);

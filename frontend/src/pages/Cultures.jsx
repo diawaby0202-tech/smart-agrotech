@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import parcelleImg from '../assets/img/cultures.jpg'
+import imgMil from '../assets/img/culture-mil.jpg'
+import imgArachide from '../assets/img/culture-arachide.jpg'
+import imgMais from '../assets/img/culture-mais.jpg'
 import BandeauApercu from '../components/common/BandeauApercu'
 
 /* ============================================================
@@ -13,6 +15,7 @@ const parcelles = [
     id: 1,
     culture: 'Mil',
     emoji: '🌾',
+    image: imgMil,
     superficie: 3.5,
     dateSemis: '12 juin 2026',
     recolte: 'Octobre 2026',
@@ -24,6 +27,7 @@ const parcelles = [
     id: 2,
     culture: 'Arachide',
     emoji: '🥜',
+    image: imgArachide,
     superficie: 2,
     dateSemis: '28 juin 2026',
     recolte: 'Septembre 2026',
@@ -35,6 +39,7 @@ const parcelles = [
     id: 3,
     culture: 'Maïs',
     emoji: '🌽',
+    image: imgMais,
     superficie: 1.2,
     dateSemis: '5 juillet 2026',
     recolte: 'Octobre 2026',
@@ -105,7 +110,7 @@ export default function Cultures() {
         {culturesAffichees.map((parcelle) => (
           <article key={parcelle.id} className="carte-parcelle">
             <div className="carte-parcelle-visuel">
-              <img src={parcelleImg} alt="" loading="lazy" />
+              <img src={parcelle.image} alt={parcelle.culture} loading="lazy" />
               <span className="carte-parcelle-emoji" aria-hidden="true">{parcelle.emoji}</span>
               <span className={`etiquette-statut etiquette-${couleurStatut[parcelle.statut]}`}>
                 {parcelle.statut}
