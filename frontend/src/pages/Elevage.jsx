@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import elevageImg from '../assets/img/elevage.jpg'
+import imgBovin from '../assets/img/elevage-bovin.jpg'
+import imgCaprin from '../assets/img/elevage-caprin.jpg'
+import imgOvin from '../assets/img/elevage-ovin.jpg'
 import BandeauApercu from '../components/common/BandeauApercu'
 
 /* ============================================================
@@ -13,6 +15,7 @@ const animaux = [
     nom: 'Vache N’Doul',
     espece: 'Bovin',
     emoji: '🐄',
+    image: imgBovin,
     identifiant: 'BOV-001',
     age: '4 ans',
     sante: 'Bonne santé',
@@ -24,6 +27,7 @@ const animaux = [
     nom: 'Lot de 12 chèvres',
     espece: 'Caprin',
     emoji: '🐐',
+    image: imgCaprin,
     identifiant: 'CAP-014',
     age: '1 à 2 ans',
     sante: 'Traitement en cours',
@@ -35,6 +39,7 @@ const animaux = [
     nom: 'Bélier Djitt',
     espece: 'Ovin',
     emoji: '🐏',
+    image: imgOvin,
     identifiant: 'OVI-007',
     age: '2 ans',
     sante: 'Bonne santé',
@@ -98,7 +103,7 @@ export default function Elevage() {
         {animauxAffiches.map((animal) => (
           <article key={animal.id} className="carte-parcelle">
             <div className="carte-parcelle-visuel">
-              <img src={elevageImg} alt="" loading="lazy" />
+              <img src={animal.image} alt={animal.nom} loading="lazy" />
               <span className="carte-parcelle-emoji" aria-hidden="true">{animal.emoji}</span>
               <span className={`etiquette-statut etiquette-${animal.etat === 'bon' ? 'croissance' : 'semis'}`}>
                 {libelleEtat[animal.etat]}

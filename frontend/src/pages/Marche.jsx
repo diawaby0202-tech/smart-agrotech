@@ -1,5 +1,8 @@
 import { useState } from 'react'
-import marcheImg from '../assets/img/marche.jpg'
+import imgMil from '../assets/img/culture-mil.jpg'
+import imgTomates from '../assets/img/marche-tomates.jpg'
+import imgBoeuf from '../assets/img/elevage-bovin.jpg'
+import imgOignons from '../assets/img/marche-oignons.jpg'
 import BandeauApercu from '../components/common/BandeauApercu'
 
 /* ============================================================
@@ -18,6 +21,7 @@ const annonces = [
     note: 4.8,
     categorie: 'Céréales',
     emoji: '🌾',
+    image: imgMil,
   },
   {
     id: 2,
@@ -29,6 +33,7 @@ const annonces = [
     note: 4.6,
     categorie: 'Maraîchage',
     emoji: '🍅',
+    image: imgTomates,
   },
   {
     id: 3,
@@ -40,6 +45,7 @@ const annonces = [
     note: 4.9,
     categorie: 'Élevage',
     emoji: '🐄',
+    image: imgBoeuf,
   },
   {
     id: 4,
@@ -51,6 +57,7 @@ const annonces = [
     note: 4.4,
     categorie: 'Maraîchage',
     emoji: '🧅',
+    image: imgOignons,
   },
 ]
 
@@ -99,7 +106,7 @@ export default function Marche() {
         {annoncesAffichees.map((annonce) => (
           <article key={annonce.id} className="carte-annonce">
             <div className="carte-annonce-visuel">
-              <img src={marcheImg} alt="" loading="lazy" />
+              <img src={annonce.image} alt={annonce.titre} loading="lazy" />
               <span className="carte-annonce-emoji" aria-hidden="true">{annonce.emoji}</span>
               <span className="carte-annonce-zone">📍 {annonce.zone}</span>
             </div>
