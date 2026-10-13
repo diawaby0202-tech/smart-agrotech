@@ -51,6 +51,23 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  /// Ouvre l'inscription. Au retour, si un compte vient d'être créé, son
+  /// email est pré-rempli et un message de confirmation s'affiche.
+  Future<void> _openRegister() async {
+    final email = await context.push<String>('/inscription');
+    if (email == null || !mounted) return;
+    setState(() {
+      _emailController.text = email;
+      _passwordController.clear();
+      _error = null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Compte créé. Connectez-vous pour continuer.'),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -145,9 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     TextButton(
-                      onPressed: _loading
-                          ? null
-                          : () => context.push('/inscription'),
+                      onPressed: _loading ? null : _openRegister,
                       child: const Text('Pas encore de compte ? S\'inscrire'),
                     ),
                     if (AppConfig.useMock) ...[

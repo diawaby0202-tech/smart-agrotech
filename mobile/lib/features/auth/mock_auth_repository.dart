@@ -52,7 +52,7 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<User> register(RegisterData data) async {
+  Future<void> register(RegisterData data) async {
     await Future<void>.delayed(delay);
     if (_find(data.email) != null) {
       const message = 'Un compte existe déjà avec cet email.';
@@ -75,7 +75,6 @@ class MockAuthRepository implements AuthRepository {
         data.password,
       ),
     );
-    return login(data.email, data.password);
   }
 
   @override

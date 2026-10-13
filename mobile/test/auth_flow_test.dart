@@ -72,7 +72,7 @@ void main() {
     expect(find.text('Se connecter'), findsOneWidget);
   });
 
-  testWidgets('inscription d\'un nouveau compte', (tester) async {
+  testWidgets('inscription : retour vers la connexion', (tester) async {
     await pumpApp(tester);
     await tester.tap(find.text('Pas encore de compte ? S\'inscrire'));
     await tester.pumpAndSettle();
@@ -92,6 +92,19 @@ void main() {
     await tester.tap(find.byKey(const Key('register-submit')));
     await tester.pumpAndSettle();
 
+    expect(find.text('Se connecter'), findsOneWidget);
+    expect(
+      find.text('Compte créé. Connectez-vous pour continuer.'),
+      findsOneWidget,
+    );
+    expect(find.text('moussa@example.sn'), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const Key('login-password')),
+      'motdepasse',
+    );
+    await tester.tap(find.byKey(const Key('login-submit')));
+    await tester.pumpAndSettle();
     expect(find.text('Bonjour Moussa'), findsOneWidget);
   });
 }

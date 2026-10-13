@@ -8,8 +8,9 @@ import 'user.dart';
 abstract class AuthRepository {
   Future<User> login(String email, String password);
 
-  /// Crée le compte puis connecte l'utilisateur.
-  Future<User> register(RegisterData data);
+  /// Crée le compte. L'utilisateur se connecte ensuite depuis l'écran de
+  /// connexion.
+  Future<void> register(RegisterData data);
 
   /// Retourne l'utilisateur si un token valide est déjà enregistré.
   Future<User?> restoreSession();
@@ -43,23 +44,11 @@ class ApiAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<User> register(RegisterData data) async {
+  Future<void> register(RegisterData data) async {
     try {
       await _client.dio.post(ApiClient.registerPath, data: data.toJson());
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
-    }
-    try {
-      return await login(data.email, data.password);
-    } on ApiException catch (e) {
-      // Le backend refuse la connexion tant que l'administrateur n'a pas
-      // validé le compte (RF-03, réglage VALIDATION_INSCRIPTION_REQUISE).
-      if (e.statusCode != 401) rethrow;
-      throw ApiException(
-        'Compte créé. Il doit être validé par un administrateur avant la '
-        'première connexion.',
-        statusCode: 401,
-      );
     }
   }
 
