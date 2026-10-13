@@ -1321,6 +1321,147 @@ img {
 }
 
 .module-illustration {
+
+/* ==========================================================================
+   Modules métier (maquettes Cultures, Élevage, Alertes, Marché)
+   ========================================================================== */
+
+.page-module {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* --- Bandeau d'aperçu ---------------------------------------------------- */
+
+.bandeau-apercu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 26px;
+  border-radius: var(--rayon-lg);
+  background: var(--degrade-marque);
+  color: var(--blanc);
+  box-shadow: var(--ombre-md);
+  overflow: hidden;
+}
+.bandeau-apercu::after {
+  content: '';
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 160px;
+  height: 160px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+}
+.bandeau-apercu-icone {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  font-size: 1.8rem;
+}
+.bandeau-apercu-texte {
+  flex: 1;
+}
+.bandeau-apercu-texte h1 {
+  font-family: var(--titre);
+  margin: 0 0 4px;
+  font-size: 1.5rem;
+  color: var(--blanc);
+}
+.bandeau-apercu-texte p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 0.95rem;
+}
+.bandeau-apercu-badge {
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* --- Statistiques (pilules) --------------------------------------------- */
+
+.stats-module {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+}
+.stat-pilule {
+  background: var(--blanc);
+  border: 1px solid var(--ardoise-200);
+  border-radius: var(--rayon);
+  padding: 16px 18px;
+  text-align: center;
+  box-shadow: var(--ombre-xs);
+}
+.stat-pilule-valeur {
+  display: block;
+  font-family: var(--titre);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--vert-600);
+}
+.stat-pilule-libelle {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.82rem;
+  color: var(--ardoise-500);
+}
+.stat-alerte {
+  border-color: var(--or-400);
+  background: linear-gradient(180deg, var(--or-100), var(--blanc));
+}
+.stat-alerte .stat-pilule-valeur {
+  color: var(--or-600);
+}
+
+/* --- Filtres / puces ----------------------------------------------------- */
+
+.filtres-module {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.puce-filtre {
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--ardoise-200);
+  background: var(--blanc);
+  color: var(--ardoise-700);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.puce-filtre:hover {
+  border-color: var(--vert-400);
+  color: var(--vert-700);
+}
+.puce-filtre.actif {
+  background: var(--vert-500);
+  border-color: var(--vert-500);
+  color: var(--blanc);
+}
+.puce-action {
+  margin-left: auto;
+}
+
   width: 132px;
   height: 132px;
   margin: 0 auto 28px;
@@ -1410,5 +1551,410 @@ img {
 .module-actions {
   display: flex;
   justify-content: center;
+}
+
+
+/* ==========================================================================
+   Modules — cartes communes (parcelles & élevage)
+   ========================================================================== */
+
+.grille-parcelles,
+.grille-annonces {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 22px;
+}
+
+.carte-parcelle,
+.carte-annonce {
+  display: flex;
+  flex-direction: column;
+  background: var(--blanc);
+  border: 1px solid var(--ardoise-200);
+  border-radius: var(--rayon);
+  overflow: hidden;
+  box-shadow: var(--ombre-sm);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.carte-parcelle:hover,
+.carte-annonce:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--ombre-md);
+}
+
+
+.carte-parcelle-visuel,
+.carte-annonce-visuel {
+  position: relative;
+  height: 168px;
+  overflow: hidden;
+  background: var(--ardoise-100);
+}
+.carte-parcelle-visuel img,
+.carte-annonce-visuel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.carte-parcelle-visuel::after,
+.carte-annonce-visuel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11, 18, 32, 0) 40%, rgba(11, 18, 32, 0.45) 100%);
+}
+.carte-parcelle-emoji,
+.carte-annonce-emoji {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  z-index: 2;
+  font-size: 1.8rem;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+}
+
+.etiquette-statut {
+  position: absolute;
+  bottom: 12px;
+  left: 14px;
+  z-index: 2;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fff;
+}
+.etiquette-semis {
+  background: #0284c7;
+}
+.etiquette-croissance {
+  background: #16a34a;
+}
+.etiquette-floraison {
+  background: #d97706;
+}
+.etiquette-recolte {
+  background: #b45309;
+}
+
+
+.carte-parcelle-corps,
+.carte-annonce-corps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  flex: 1;
+}
+.carte-parcelle-corps h3,
+.carte-annonce-corps h3 {
+  font-family: var(--titre);
+  font-size: 1.2rem;
+  margin: 0;
+}
+.carte-parcelle-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--ardoise-500);
+  font-size: 0.88rem;
+}
+
+.progression {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.progression-entete {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ardoise-500);
+}
+.progression-piste {
+  height: 8px;
+  background: var(--ardoise-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progression-remplissage {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--degrade-marque);
+}
+
+.carte-parcelle-rappel {
+  margin: 0;
+  padding: 10px 12px;
+  background: var(--or-100);
+  color: var(--or-600);
+  border-radius: var(--rayon-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+
+/* ==========================================================================
+   Module Alertes — carte météo
+   ========================================================================== */
+
+.titre-section-module {
+  font-family: var(--titre);
+  font-size: 1.3rem;
+  margin: 30px 0 16px;
+}
+
+.carte-meteo {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 60%, #075985 100%);
+  color: #fff;
+  border: none;
+}
+.carte-meteo h2 {
+  color: #fff;
+}
+.carte-meteo-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.carte-meteo-entete p {
+  margin: 4px 0 0;
+  opacity: 0.85;
+  font-size: 0.85rem;
+}
+.carte-meteo-actuel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.carte-meteo-temp {
+  font-family: var(--titre);
+  font-size: 3.2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.carte-meteo-etat {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.meteo-previsions {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-top: 20px;
+}
+.meteo-jour {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--rayon);
+  backdrop-filter: blur(4px);
+}
+.meteo-jour-nom {
+  font-size: 0.8rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+.meteo-jour-icone {
+  font-size: 1.6rem;
+}
+.meteo-jour-temps {
+  font-size: 0.85rem;
+}
+.meteo-jour-temps strong {
+  font-weight: 700;
+}
+.carte-meteo-image {
+  position: absolute;
+  right: -30px;
+  bottom: -30px;
+  width: 220px;
+  opacity: 0.16;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+
+/* --- Marché : barre de recherche ----------------------------------------- */
+
+.barre-recherche-marche {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--blanc);
+  border: 1px solid var(--ardoise-200);
+  border-radius: 999px;
+  padding: 8px 8px 8px 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--ombre-sm);
+}
+.barre-recherche-marche input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font: inherit;
+  font-size: 1rem;
+  background: transparent;
+  color: var(--encre);
+}
+.barre-recherche-marche input::placeholder {
+  color: var(--ardoise-400);
+}
+.barre-recherche-icone {
+  font-size: 1.1rem;
+}
+
+/* --- Marché : détail des cartes annonce ---------------------------------- */
+
+.carte-annonce-corps {
+  gap: 10px;
+}
+.carte-annonce-cat {
+  align-self: flex-start;
+  background: var(--vert-200);
+  color: var(--vert-800);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.carte-annonce-corps h3 {
+  font-size: 1.08rem;
+}
+.carte-annonce-prix {
+  margin: 0;
+  font-family: var(--titre);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--vert-700);
+}
+.carte-annonce-prix span {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ardoise-500);
+}
+.carte-annonce-pied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--ardoise-100);
+  font-size: 0.85rem;
+  color: var(--ardoise-700);
+}
+.carte-annonce-vendeur {
+  font-weight: 600;
+}
+.carte-annonce-note {
+  background: #fef3c7;
+  color: #b45309;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.carte-annonce-zone {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  background: rgba(11, 18, 32, 0.6);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+.grille-annonces {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 22px;
+}
+
+
+/* --- Alertes : liste et cartes ------------------------------------------- */
+
+.titre-section-module {
+  font-family: var(--titre);
+  font-size: 1.3rem;
+  margin: 32px 0 16px;
+}
+.liste-alertes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.carte-alerte {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: var(--blanc);
+  border: 1px solid var(--ardoise-200);
+  border-left: 5px solid var(--ardoise-400);
+  border-radius: var(--rayon);
+  padding: 18px 20px;
+  box-shadow: var(--ombre-sm);
+}
+.carte-alerte-icone {
+  font-size: 1.8rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.carte-alerte-corps {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.carte-alerte-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.carte-alerte-entete h3 {
+  margin: 0;
+  font-family: var(--titre);
+  font-size: 1.1rem;
+}
+.carte-alerte-meta {
+  margin: 0;
+  color: var(--ardoise-500);
+  font-size: 0.88rem;
+}
+.carte-alerte-conseil {
+  margin: 4px 0 0;
+  color: var(--ardoise-700);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/* Niveaux d'alerte */
+.alerte-risque {
+  border-left-color: var(--danger);
+  background: var(--danger-clair);
+}
+.alerte-vigilance {
+  border-left-color: var(--attention);
+  background: var(--attention-clair);
+}
+.alerte-info {
+  border-left-color: var(--info);
+  background: var(--info-clair);
 }
 
