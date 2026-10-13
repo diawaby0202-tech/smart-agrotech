@@ -18,4 +18,12 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    // Un fichier de contexte React exporte légitimement le Provider (composant)
+    // et le hook useAuth associé : on l'exempte de la règle "fast refresh".
+    files: ['src/context/**/*.jsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])
