@@ -81,6 +81,70 @@ class AnnonceTests(APITestCase):
         self.assertEqual(len(self.client.get(self.url + 'mes_annonces/').json()), 2)
 
 
+class ModerationAdminTests(APITestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user(email='adm@x.com', password='Passw0rd!x', nom='A',
+                                              prenom='B', role='admin')
+        self.vendeur = creer('v@x.com')
+        self.a = Annonce.objects.create(vendeur=self.vendeur, titre='Mil', categorie='cereales',
+                                        prix=1000)
+        self.b = Annonce.objects.create(vendeur=self.vendeur, titre='Faux produit',
+                                        categorie='autre', prix=5)
+        self.url = '/api/admin/annonces/'
+
+    def test_refuse_aux_non_admins(self):
+        self.assertEqual(self.client.get(self.url).status_code, 401)
+        self.client.force_authenticate(self.vendeur)
+        self.assertEqual(self.client.get(self.url).status_code, 403)
+        self.assertEqual(self.client.post(f'{self.url}{self.a.id}/masquer/').status_code, 403)
+
+    def test_liste_complete_pour_admin(self):
+        Annonce.objects.filter(pk=self.b.pk).update(moderation='supprimee')
+        self.client.force_authenticate(self.admin)
+        r = self.client.get(self.url).json()
+        self.assertEqual(len(r), 2)
+        self.assertIn('vendeur_email', r[0])
+
+    def test_filtres(self):
+        Annonce.objects.filter(pk=self.b.pk).update(moderation='supprimee')
+        self.client.force_authenticate(self.admin)
+        self.assertEqual(len(self.client.get(self.url + '?moderation=supprimee').json()), 1)
+        self.assertEqual(len(self.client.get(self.url + '?q=faux').json()), 1)
+        self.assertEqual(len(self.client.get(self.url + f'?vendeur={self.vendeur.id}').json()), 2)
+
+    def test_masquer_retire_du_marche(self):
+        self.client.force_authenticate(self.admin)
+        r = self.client.post(f'{self.url}{self.b.id}/masquer/')
+        self.assertEqual(r.json()['moderation'], 'supprimee')
+        self.client.force_authenticate(self.vendeur)
+        titres = [a['titre'] for a in self.client.get('/api/annonces/').json()]
+        self.assertEqual(titres, ['Mil'])
+
+    def test_restaurer(self):
+        Annonce.objects.filter(pk=self.b.pk).update(moderation='supprimee')
+        self.client.force_authenticate(self.admin)
+        r = self.client.post(f'{self.url}{self.b.id}/restaurer/')
+        self.assertEqual(r.json()['moderation'], 'approuvee')
+
+    def test_patch_moderation_seulement(self):
+        self.client.force_authenticate(self.admin)
+        r = self.client.patch(f'{self.url}{self.a.id}/', {'moderation': 'supprimee', 'prix': 1})
+        self.assertEqual(r.status_code, 200)
+        self.a.refresh_from_db()
+        self.assertEqual(self.a.moderation, 'supprimee')
+        self.assertEqual(self.a.prix, 1000)
+
+    def test_suppression_definitive(self):
+        self.client.force_authenticate(self.admin)
+        self.assertEqual(self.client.delete(f'{self.url}{self.b.id}/').status_code, 204)
+        self.assertFalse(Annonce.objects.filter(pk=self.b.pk).exists())
+
+    def test_pas_de_creation_ni_put(self):
+        self.client.force_authenticate(self.admin)
+        self.assertEqual(self.client.post(self.url, {'titre': 'x'}).status_code, 405)
+        self.assertEqual(self.client.put(f'{self.url}{self.a.id}/', {}).status_code, 405)
+
+
 # ---------- Photo des annonces (RF-16) ----------
 import shutil
 import tempfile
