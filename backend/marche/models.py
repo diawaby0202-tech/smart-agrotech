@@ -32,7 +32,8 @@ class Annonce(models.Model):
     prix = models.DecimalField(max_digits=12, decimal_places=0, help_text='En FCFA')
     quantite = models.CharField(max_length=50, blank=True, help_text='Ex : 50 kg, 3 têtes')
     zone = models.CharField(max_length=100, blank=True)
-    photo = models.URLField(blank=True)
+    photo = models.URLField(blank=True, help_text='Lien externe (optionnel)')
+    image = models.ImageField(upload_to='annonces/', blank=True, null=True)
     statut = models.CharField(
         max_length=20, choices=StatutAnnonce.choices, default=StatutAnnonce.DISPONIBLE
     )

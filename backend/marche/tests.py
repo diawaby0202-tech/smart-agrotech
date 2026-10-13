@@ -79,3 +79,60 @@ class AnnonceTests(APITestCase):
     def test_mes_annonces(self):
         self.client.force_authenticate(self.u2)
         self.assertEqual(len(self.client.get(self.url + 'mes_annonces/').json()), 2)
+
+
+# ---------- Photo des annonces (RF-16) ----------
+import shutil
+import tempfile
+from io import BytesIO
+
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
+from PIL import Image
+
+_MEDIA = tempfile.mkdtemp()
+
+
+def faux_png(taille=(10, 10), nom='photo.png'):
+    buf = BytesIO()
+    Image.new('RGB', taille, 'green').save(buf, 'PNG')
+    return SimpleUploadedFile(nom, buf.getvalue(), content_type='image/png')
+
+
+@override_settings(MEDIA_ROOT=_MEDIA)
+class PhotoAnnonceTests(APITestCase):
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(_MEDIA, ignore_errors=True)
+
+    def setUp(self):
+        self.u = creer('p@x.com')
+        self.client.force_authenticate(self.u)
+
+    def test_publication_avec_photo(self):
+        r = self.client.post('/api/annonces/', {
+            'titre': 'Tomates', 'categorie': 'legumes', 'prix': 3000, 'image': faux_png()},
+            format='multipart')
+        self.assertEqual(r.status_code, 201)
+        self.assertIn('/media/annonces/', r.json()['image'])
+        self.assertTrue(Annonce.objects.get().image)
+
+    def test_publication_sans_photo(self):
+        r = self.client.post('/api/annonces/', {
+            'titre': 'Tomates', 'categorie': 'legumes', 'prix': 3000}, format='json')
+        self.assertEqual(r.status_code, 201)
+        self.assertIsNone(r.json()['image'])
+
+    def test_fichier_non_image_refuse(self):
+        faux = SimpleUploadedFile('a.png', b'pas une image', content_type='image/png')
+        r = self.client.post('/api/annonces/', {
+            'titre': 'x', 'categorie': 'autre', 'prix': 1, 'image': faux}, format='multipart')
+        self.assertEqual(r.status_code, 400)
+
+    def test_image_trop_lourde_refusee(self):
+        gros = SimpleUploadedFile('gros.png', faux_png().read() + b'0' * (5 * 1024 * 1024),
+                                  content_type='image/png')
+        r = self.client.post('/api/annonces/', {
+            'titre': 'x', 'categorie': 'autre', 'prix': 1, 'image': gros}, format='multipart')
+        self.assertEqual(r.status_code, 400)

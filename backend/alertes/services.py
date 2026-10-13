@@ -17,6 +17,8 @@ SEUIL_PLUIE_MM = 20       # pluie cumulée sur la journée
 SEUIL_CHALEUR_ATTENTION = 37
 SEUIL_CHALEUR_DANGER = 40
 SEUIL_VENT_MS = 15        # ~54 km/h
+JOURS_RAPPEL_RECOLTE = 7  # rappel de récolte
+JOURS_RAPPEL_SEMIS = 3    # rappel de semis
 
 
 class MeteoIndisponible(Exception):
@@ -95,6 +97,38 @@ def _creer_si_absente(user, type_, niveau, titre, message, zone=''):
     )
 
 
+def _rappels_cultures(user):
+    """Rappels liés aux étapes de la culture (RF-09). Renvoie le nb d'alertes créées."""
+    from cultures.models import Parcelle
+
+    today = timezone.localdate()
+    crees = 0
+    parcelles = Parcelle.objects.filter(proprietaire=user).exclude(statut='recoltee')
+    for p in parcelles:
+        if p.date_recolte_prevue:
+            reste = (p.date_recolte_prevue - today).days
+            if reste < 0:
+                alerte = ('attention', f'Récolte en retard : {p.nom}',
+                          f'La récolte de {p.culture} était prévue le {p.date_recolte_prevue}.')
+            elif reste <= JOURS_RAPPEL_RECOLTE:
+                alerte = ('info', f'Récolte proche : {p.nom}',
+                          f'Récolte de {p.culture} prévue le {p.date_recolte_prevue} '
+                          f'(dans {reste} jour(s)).')
+            else:
+                alerte = None
+            if alerte and _creer_si_absente(user, 'culture', *alerte, zone=p.localisation):
+                crees += 1
+        if p.statut == 'preparation' and p.date_semis:
+            reste = (p.date_semis - today).days
+            if 0 <= reste <= JOURS_RAPPEL_SEMIS:
+                if _creer_si_absente(
+                    user, 'culture', 'info', f'Semis à prévoir : {p.nom}',
+                    f'Semis de {p.culture} prévu le {p.date_semis}.', p.localisation,
+                ):
+                    crees += 1
+    return crees
+
+
 def generer_alertes(user, jours_vaccination=7):
     """Crée les alertes météo (par zone de parcelle) et vaccination. Renvoie le nb créé."""
     from cultures.models import Parcelle
@@ -113,6 +147,8 @@ def generer_alertes(user, jours_vaccination=7):
         for niveau, titre, message in detecter_risques(resume):
             if _creer_si_absente(user, 'meteo', niveau, f'{titre} ({zone})', message, zone):
                 crees += 1
+
+    crees += _rappels_cultures(user)
 
     today = timezone.localdate()
     suivis = SuiviSanitaire.objects.filter(

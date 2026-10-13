@@ -12,7 +12,7 @@ class AnnonceSerializer(serializers.ModelSerializer):
         model = Annonce
         fields = [
             'id', 'titre', 'description', 'categorie', 'prix', 'quantite', 'zone',
-            'photo', 'statut', 'moderation', 'vendeur_nom', 'vendeur_telephone',
+            'photo', 'image', 'statut', 'moderation', 'vendeur_nom', 'vendeur_telephone',
             'est_proprietaire', 'date_creation',
         ]
         read_only_fields = ['id', 'moderation', 'date_creation']
@@ -23,6 +23,11 @@ class AnnonceSerializer(serializers.ModelSerializer):
     def get_est_proprietaire(self, obj):
         request = self.context.get('request')
         return bool(request and obj.vendeur_id == request.user.id)
+
+    def validate_image(self, value):
+        if value and value.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError("L'image ne doit pas dépasser 5 Mo.")
+        return value
 
     def validate_prix(self, value):
         if value < 0:
