@@ -104,3 +104,40 @@ class AdministrationTests(APITestCase):
         self._connecter('admin@mail.com', 'AdminPass2026!')
         reponse = self.client.delete(f'/api/admin/users/{self.simple.id}/')
         self.assertEqual(reponse.status_code, status.HTTP_204_NO_CONTENT)
+
+
+class StatistiquesTests(APITestCase):
+    def setUp(self):
+        self.admin = Utilisateur.objects.create_superuser(
+            email='admin@mail.com', password='AdminPass2026!', nom='Admin', prenom='Super'
+        )
+        Utilisateur.objects.create_user(
+            email='p1@mail.com', password='Pass2026!x', nom='P', prenom='Un', role='producteur'
+        )
+        Utilisateur.objects.create_user(
+            email='a1@mail.com', password='Pass2026!x', nom='A', prenom='Un', role='acheteur',
+            statut=StatutCompte.EN_ATTENTE,
+        )
+
+    def _connecter(self, email, mot_de_passe):
+        reponse = self.client.post('/api/auth/login/', {'email': email, 'password': mot_de_passe})
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {reponse.data['access']}")
+
+    def test_statistiques_pour_ladmin(self):
+        self._connecter('admin@mail.com', 'AdminPass2026!')
+        reponse = self.client.get('/api/admin/stats/')
+        self.assertEqual(reponse.status_code, status.HTTP_200_OK)
+        self.assertEqual(reponse.data['total_utilisateurs'], 3)
+        self.assertEqual(reponse.data['par_role']['producteur'], 1)
+        self.assertEqual(reponse.data['par_role']['acheteur'], 1)
+        self.assertEqual(reponse.data['par_role']['admin'], 1)
+        self.assertEqual(reponse.data['par_statut']['en_attente'], 1)
+        self.assertEqual(reponse.data['par_statut']['suspendu'], 0)
+        self.assertEqual(reponse.data['nouveaux_30_jours'], 3)
+
+    def test_statistiques_interdites_aux_non_admins(self):
+        self._connecter('p1@mail.com', 'Pass2026!x')
+        self.assertEqual(self.client.get('/api/admin/stats/').status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_statistiques_sans_connexion(self):
+        self.assertEqual(self.client.get('/api/admin/stats/').status_code, status.HTTP_401_UNAUTHORIZED)
