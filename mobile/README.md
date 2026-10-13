@@ -55,15 +55,24 @@ lib/
 
 Chaque module à venir (cultures, élevage, météo, marché) aura son dossier dans `features/`, avec un dépôt « mock » et un dépôt « API » derrière la même interface, comme `auth/`.
 
-## Ce que l'app attend de l'API (à valider avec le backend)
+## Appels à l'API utilisés par l'app
 
-Les chemins viennent du README principal. Le format des données ci-dessous est une **hypothèse** côté mobile tant que le contrat Swagger n'existe pas :
+Vérifiés avec le code du backend (app `utilisateurs`, fusionnée dans `main`) :
 
-| Appel | Corps envoyé | Réponse attendue |
+| Appel | Corps envoyé | Réponse |
 |---|---|---|
-| `POST /api/auth/register/` | `nom`, `prenom`, `email`, `telephone`, `password`, `role` (`producteur` ou `acheteur`) | 201 |
+| `POST /api/auth/register/` | `nom`, `prenom`, `email`, `telephone`, `password` (8 caractères min.), `role` (`producteur` ou `acheteur`) | 201 |
 | `POST /api/auth/login/` | `email`, `password` | `{ "access": "...", "refresh": "..." }` |
 | `POST /api/auth/refresh/` | `refresh` | `{ "access": "..." }` |
-| `GET /api/users/me/` | — (en-tête `Authorization: Bearer <access>`) | `id`, `nom`, `prenom`, `email`, `telephone`, `role` |
+| `GET /api/users/me/` | — (en-tête `Authorization: Bearer <access>`) | `id`, `nom`, `prenom`, `email`, `telephone`, `role`, `statut`, `date_inscription` |
 
-Erreurs de validation au format Django REST Framework : `{ "email": ["Message"] }` ou `{ "detail": "Message" }`.
+Les erreurs de validation (`{ "email": ["Message"] }`) sont affichées sous le champ concerné, les erreurs générales (`{ "detail": "Message" }`) sous le formulaire.
+
+### Émulateur Android et `ALLOWED_HOSTS`
+
+Django refuse (erreur 400) les requêtes envoyées à `10.0.2.2` tant que cette adresse n'est pas dans `ALLOWED_HOSTS` (`backend/config/settings.py`). En attendant, on peut rediriger le port de l'émulateur vers le PC et utiliser `localhost` :
+
+```bash
+adb reverse tcp:8000 tcp:8000
+flutter run --dart-define=USE_MOCK=false --dart-define=API_BASE_URL=http://localhost:8000/api
+```

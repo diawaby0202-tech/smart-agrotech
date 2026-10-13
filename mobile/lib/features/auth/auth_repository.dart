@@ -38,9 +38,6 @@ class ApiAuthRepository implements AuthRepository {
       );
       return await _fetchProfile();
     } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        throw ApiException('Email ou mot de passe incorrect.', statusCode: 401);
-      }
       throw ApiException.fromDio(e);
     }
   }
@@ -52,7 +49,18 @@ class ApiAuthRepository implements AuthRepository {
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }
-    return login(data.email, data.password);
+    try {
+      return await login(data.email, data.password);
+    } on ApiException catch (e) {
+      // Le backend refuse la connexion tant que l'administrateur n'a pas
+      // validé le compte (RF-03, réglage VALIDATION_INSCRIPTION_REQUISE).
+      if (e.statusCode != 401) rethrow;
+      throw ApiException(
+        'Compte créé. Il doit être validé par un administrateur avant la '
+        'première connexion.',
+        statusCode: 401,
+      );
+    }
   }
 
   @override
