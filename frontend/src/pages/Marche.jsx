@@ -5,12 +5,13 @@ export default function Marche() {
     <PageEnConstruction
       icone="🛒"
       titre="Marché agricole"
-      description="Publiez vos annonces de vente et trouvez des produits locaux près de vous."
+      accroche="L’offre et la demande, réunies sur une seule place de marché."
+      description="Publiez vos récoltes et votre bétail à la vente, ou trouvez des produits frais et locaux proposés par les producteurs de votre région."
       fonctionnalites={[
-        'Publier une annonce (titre, description, prix, photo) — RF-16',
-        'Rechercher par catégorie, zone ou prix — RF-17',
-        'Contacter un vendeur — RF-18',
-        'Modifier ou supprimer ses propres annonces — RF-19',
+        'Publier une annonce avec photo, prix et description',
+        'Rechercher par catégorie, zone géographique ou budget',
+        'Contacter directement un vendeur',
+        'Gérer, modifier ou retirer vos propres annonces',
       ]}
     />
   )

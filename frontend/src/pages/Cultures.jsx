@@ -5,12 +5,13 @@ export default function Cultures() {
     <PageEnConstruction
       icone="🌾"
       titre="Suivi des cultures"
-      description="Gérez vos parcelles, suivez l'évolution de vos cultures et anticipez vos récoltes."
+      accroche="De la parcelle à la récolte, gardez le contrôle sur vos cultures."
+      description="Enregistrez vos parcelles, suivez leur évolution étape par étape et anticipez vos périodes de récolte grâce à un calendrier intelligent."
       fonctionnalites={[
-        'Enregistrer une parcelle (culture, superficie, date de semis) — RF-06',
-        'Mettre à jour le statut d’une culture (semis, croissance, récolte) — RF-07',
-        'Calendrier prévisionnel des récoltes — RF-08',
-        'Rappels d’irrigation, traitement et récolte — RF-09',
+        'Enregistrer une parcelle (culture, superficie, date de semis)',
+        'Suivre l’évolution : semis, croissance, floraison, récolte',
+        'Consulter un calendrier prévisionnel des récoltes',
+        'Recevoir des rappels d’irrigation, de traitement et de récolte',
       ]}
     />
   )

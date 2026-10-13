@@ -5,12 +5,13 @@ export default function Alertes() {
     <PageEnConstruction
       icone="⛅"
       titre="Alertes météo & environnementales"
-      description="Consultez la météo de votre zone et soyez alerté des risques climatiques."
+      accroche="Anticipez la météo, protégez vos récoltes et votre bétail."
+      description="Consultez les prévisions de votre zone et recevez des alertes précoces en cas de risque climatique, accompagnées de conseils adaptés à votre activité."
       fonctionnalites={[
-        'Prévisions météo locales par région — RF-13',
-        'Alertes en cas de risque (sécheresse, fortes pluies, chaleur) — RF-14',
-        'Conseils contextuels associés aux alertes',
-        'Historique des alertes reçues — RF-15',
+        'Prévisions météo locales par région et par zone',
+        'Alertes en cas de sécheresse, fortes pluies ou canicule',
+        'Conseils pratiques adaptés à chaque alerte',
+        'Historique de toutes les alertes reçues',
       ]}
     />
   )

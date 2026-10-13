@@ -12,6 +12,12 @@ export default function TableauDeBord() {
   const { utilisateur, estAdmin } = useAuth()
 
   const prenom = utilisateur?.prenom || ''
+  const libelleRole =
+    utilisateur?.role === 'admin'
+      ? 'Administrateur'
+      : utilisateur?.role === 'acheteur'
+        ? 'Acheteur'
+        : 'Agriculteur / Éleveur'
   const modulesProducteur = [
     { icone: '🌾', titre: 'Mes parcelles', texte: 'Suivre mes cultures et mes récoltes', lien: '/cultures' },
     { icone: '🐄', titre: 'Mon élevage', texte: 'Gérer mes animaux et leur santé', lien: '/elevage' },
@@ -28,7 +34,10 @@ export default function TableauDeBord() {
 
   return (
     <div className="page-tableau-de-bord">
-      <div className="entete-page">
+      <div className="entete-page apparait">
+        <span className="badge badge-vert" style={{ marginBottom: 12 }}>
+          {libelleRole}
+        </span>
         <h1>{salutation}{prenom ? `, ${prenom}` : ''} 👋</h1>
         <p>Voici un aperçu de votre espace Smart AgroTech.</p>
       </div>
@@ -51,6 +60,7 @@ export default function TableauDeBord() {
             <span className="carte-module-icone" aria-hidden="true">{module.icone}</span>
             <h3>{module.titre}</h3>
             <p>{module.texte}</p>
+            <span className="carte-module-lien">Accéder →</span>
           </Link>
         ))}
       </div>

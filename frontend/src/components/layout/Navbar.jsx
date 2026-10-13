@@ -31,7 +31,9 @@ export default function Navbar() {
       <div className="navbar-interne">
         <Link to="/" className="navbar-marque" onClick={fermerMenu}>
           <span className="navbar-logo" aria-hidden="true">🌱</span>
-          <span className="navbar-titre">Smart AgroTech</span>
+          <span className="navbar-titre">
+            Smart<span className="navbar-titre-accent">AgroTech</span>
+          </span>
         </Link>
 
         <button
