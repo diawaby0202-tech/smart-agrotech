@@ -1,5 +1,12 @@
 import { Link } from 'react-router-dom'
-import heroImg from '../assets/hero.png'
+import heroImg from '../assets/img/hero.jpg'
+import culturesImg from '../assets/img/cultures.jpg'
+import elevageImg from '../assets/img/elevage.jpg'
+import meteoImg from '../assets/img/meteo.jpg'
+import marcheImg from '../assets/img/marche.jpg'
+import producteurImg from '../assets/img/producteur.jpg'
+import acheteurImg from '../assets/img/acheteur.jpg'
+import structuresImg from '../assets/img/structures.jpg'
 
 const modules = [
   {
@@ -8,6 +15,7 @@ const modules = [
     texte:
       'Enregistrez vos parcelles, suivez leur évolution (semis, croissance, récolte) et anticipez vos récoltes.',
     lien: '/cultures',
+    image: culturesImg,
   },
   {
     icone: '🐄',
@@ -15,6 +23,7 @@ const modules = [
     texte:
       'Tenez à jour la fiche de chaque animal, consignez les soins et recevez des rappels de vaccination.',
     lien: '/elevage',
+    image: elevageImg,
   },
   {
     icone: '⛅',
@@ -22,6 +31,7 @@ const modules = [
     texte:
       'Consultez les prévisions de votre zone et soyez alerté des risques climatiques en amont.',
     lien: '/alertes',
+    image: meteoImg,
   },
   {
     icone: '🛒',
@@ -29,6 +39,7 @@ const modules = [
     texte:
       'Publiez vos annonces, trouvez des produits locaux et contactez directement les vendeurs.',
     lien: '/marche',
+    image: marcheImg,
   },
 ]
 
@@ -44,16 +55,19 @@ const publics = [
     icone: '🧑‍🌾',
     titre: 'Agriculteurs & éleveurs',
     texte: 'Suivi des parcelles et du bétail, rappels d’intervention et publication d’annonces.',
+    image: producteurImg,
   },
   {
     icone: '🛒',
     titre: 'Acheteurs',
     texte: 'Recherche de produits locaux et mise en relation directe avec les producteurs.',
+    image: acheteurImg,
   },
   {
     icone: '🏛️',
     titre: 'Structures d’appui',
     texte: 'ONG et services techniques : supervision et suivi des activités de leur zone.',
+    image: structuresImg,
   },
 ]
 
@@ -82,7 +96,16 @@ export default function Accueil() {
           </div>
         </div>
         <div className="accueil-hero-image">
-          <img src={heroImg} alt="Illustration Smart AgroTech" />
+          <div className="accueil-hero-photo">
+            <img src={heroImg} alt="Agriculteur dans un champ au Sénégal" loading="eager" />
+            <div className="accueil-hero-badge">
+              <span className="accueil-hero-badge-icone" aria-hidden="true">🌾</span>
+              <div>
+                <strong>Suivi en temps réel</strong>
+                <span>Parcelles, bétail, météo & marché</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -106,10 +129,15 @@ export default function Accueil() {
         <div className="grille-modules">
           {modules.map((module) => (
             <Link to={module.lien} key={module.titre} className="carte-module">
-              <span className="carte-module-icone" aria-hidden="true">{module.icone}</span>
-              <h3>{module.titre}</h3>
-              <p>{module.texte}</p>
-              <span className="carte-module-lien">Découvrir →</span>
+              <div className="carte-module-media">
+                <img src={module.image} alt={module.titre} loading="lazy" />
+                <span className="carte-module-icone" aria-hidden="true">{module.icone}</span>
+              </div>
+              <div className="carte-module-corps">
+                <h3>{module.titre}</h3>
+                <p>{module.texte}</p>
+                <span className="carte-module-lien">Découvrir →</span>
+              </div>
             </Link>
           ))}
         </div>
@@ -126,9 +154,14 @@ export default function Accueil() {
         <div className="grille-publics">
           {publics.map((public_) => (
             <div className="carte-public" key={public_.titre}>
-              <div className="carte-public-icone" aria-hidden="true">{public_.icone}</div>
-              <h3>{public_.titre}</h3>
-              <p>{public_.texte}</p>
+              <div className="carte-public-media">
+                <img src={public_.image} alt={public_.titre} loading="lazy" />
+                <span className="carte-public-icone" aria-hidden="true">{public_.icone}</span>
+              </div>
+              <div className="carte-public-corps">
+                <h3>{public_.titre}</h3>
+                <p>{public_.texte}</p>
+              </div>
             </div>
           ))}
         </div>
