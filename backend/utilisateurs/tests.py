@@ -141,3 +141,27 @@ class StatistiquesTests(APITestCase):
 
     def test_statistiques_sans_connexion(self):
         self.assertEqual(self.client.get('/api/admin/stats/').status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class DeconnexionTests(APITestCase):
+    def test_deconnexion_invalide_le_refresh_token(self):
+        self.client.post('/api/auth/register/', DONNEES)
+        tokens = self.client.post(
+            '/api/auth/login/', {'email': DONNEES['email'], 'password': DONNEES['password']}
+        ).data
+
+        # Avant la déconnexion, le refresh token fonctionne.
+        ok = self.client.post('/api/auth/refresh/', {'refresh': tokens['refresh']})
+        self.assertEqual(ok.status_code, status.HTTP_200_OK)
+
+        # Déconnexion (RF-04)
+        reponse = self.client.post('/api/auth/logout/', {'refresh': tokens['refresh']})
+        self.assertEqual(reponse.status_code, status.HTTP_200_OK)
+
+        # Après la déconnexion, le même refresh token est refusé.
+        refuse = self.client.post('/api/auth/refresh/', {'refresh': tokens['refresh']})
+        self.assertEqual(refuse.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_deconnexion_avec_faux_token(self):
+        reponse = self.client.post('/api/auth/logout/', {'refresh': 'faux-token'})
+        self.assertEqual(reponse.status_code, status.HTTP_401_UNAUTHORIZED)
