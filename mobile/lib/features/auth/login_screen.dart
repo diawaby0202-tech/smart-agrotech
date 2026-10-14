@@ -7,6 +7,9 @@ import '../../core/config.dart';
 import 'auth_provider.dart';
 import 'mock_auth_repository.dart';
 import 'validators.dart';
+import '../../core/design.dart';
+import '../../core/theme.dart';
+import '../../core/widgets.dart';
 
 /// Écran de connexion (RF-02). La redirection vers l'accueil est faite par le
 /// routeur dès que [AuthProvider] passe à l'état connecté.
@@ -73,110 +76,123 @@ class _LoginScreenState extends State<LoginScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: Couleurs.vert50,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(20),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Icon(
-                      Icons.agriculture,
-                      size: 72,
-                      color: theme.colorScheme.primary,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Smart AgroTech',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const EnteteMarque(),
+                  const SizedBox(height: 24),
+                  CarteFormulaire(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Center(child: LogoMarque()),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Connexion',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.headlineMedium,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Accédez à votre espace Smart AgroTech.',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: Couleurs.ardoise500,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          if (_error != null) ...[
+                            Encadre(
+                              icone: '⚠️',
+                              texte: _error!,
+                              fond: Couleurs.dangerClair,
+                              couleur: Couleurs.danger,
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                          TextFormField(
+                            key: const Key('login-email'),
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            autofillHints: const [AutofillHints.email],
+                            decoration: const InputDecoration(
+                              labelText: 'Adresse e-mail',
+                              hintText: 'exemple@domaine.sn',
+                            ),
+                            validator: Validators.email,
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            key: const Key('login-password'),
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            textInputAction: TextInputAction.done,
+                            autofillHints: const [AutofillHints.password],
+                            onFieldSubmitted: (_) => _submit(),
+                            decoration: InputDecoration(
+                              labelText: 'Mot de passe',
+                              hintText: 'Votre mot de passe',
+                              suffixIcon: IconButton(
+                                tooltip: _obscurePassword
+                                    ? 'Afficher'
+                                    : 'Masquer',
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                ),
+                                onPressed: () => setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                ),
+                              ),
+                            ),
+                            validator: Validators.required,
+                          ),
+                          const SizedBox(height: 24),
+                          SubmitButton(
+                            key: const Key('login-submit'),
+                            label: 'Se connecter',
+                            loading: _loading,
+                            onPressed: _submit,
+                          ),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              const Text('Pas encore de compte ?'),
+                              TextButton(
+                                key: const Key('login-inscription'),
+                                onPressed: _loading ? null : _openRegister,
+                                child: const Text('Créer un compte'),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Connectez-vous à votre compte',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyLarge,
-                    ),
-                    const SizedBox(height: 32),
-                    TextFormField(
-                      key: const Key('login-email'),
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      autofillHints: const [AutofillHints.email],
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.email_outlined),
-                      ),
-                      validator: Validators.email,
-                    ),
+                  ),
+                  if (AppConfig.useMock) ...[
                     const SizedBox(height: 16),
-                    TextFormField(
-                      key: const Key('login-password'),
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      textInputAction: TextInputAction.done,
-                      autofillHints: const [AutofillHints.password],
-                      onFieldSubmitted: (_) => _submit(),
-                      decoration: InputDecoration(
-                        labelText: 'Mot de passe',
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          tooltip: _obscurePassword ? 'Afficher' : 'Masquer',
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                          ),
-                          onPressed: () => setState(
-                            () => _obscurePassword = !_obscurePassword,
-                          ),
-                        ),
-                      ),
-                      validator: Validators.required,
+                    Text(
+                      'Mode démo (données fictives)\n'
+                      '${MockAuthRepository.demoEmail} / '
+                      '${MockAuthRepository.demoPassword}',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall,
                     ),
-                    if (_error != null) ...[
-                      const SizedBox(height: 16),
-                      Text(
-                        _error!,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: theme.colorScheme.error),
-                      ),
-                    ],
-                    const SizedBox(height: 24),
-                    FilledButton(
-                      key: const Key('login-submit'),
-                      onPressed: _loading ? null : _submit,
-                      child: _loading
-                          ? const SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Se connecter'),
-                    ),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: _loading ? null : _openRegister,
-                      child: const Text('Pas encore de compte ? S\'inscrire'),
-                    ),
-                    if (AppConfig.useMock) ...[
-                      const SizedBox(height: 16),
-                      Text(
-                        'Mode démo (données fictives)\n'
-                        '${MockAuthRepository.demoEmail} / '
-                        '${MockAuthRepository.demoPassword}',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodySmall,
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
             ),
           ),

@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/api_exception.dart';
+import '../../core/theme.dart';
+import '../../core/design.dart';
 import 'auth_provider.dart';
 import 'user.dart';
 import 'validators.dart';
@@ -97,114 +99,138 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Créer un compte')),
+      backgroundColor: Couleurs.vert50,
+      appBar: AppBar(backgroundColor: Couleurs.vert50),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TextFormField(
-                      key: const Key('register-prenom'),
-                      controller: _prenomController,
-                      textCapitalization: TextCapitalization.words,
-                      textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(labelText: 'Prénom'),
-                      validator: _validate('prenom', Validators.required),
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      key: const Key('register-nom'),
-                      controller: _nomController,
-                      textCapitalization: TextCapitalization.words,
-                      textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(labelText: 'Nom'),
-                      validator: _validate('nom', Validators.required),
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      key: const Key('register-email'),
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(labelText: 'Email'),
-                      validator: _validate('email', Validators.email),
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      key: const Key('register-telephone'),
-                      controller: _telephoneController,
-                      keyboardType: TextInputType.phone,
-                      textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                        labelText: 'Téléphone',
-                        hintText: '77 123 45 67',
-                      ),
-                      validator: _validate('telephone', Validators.telephone),
-                    ),
-                    const SizedBox(height: 16),
-                    Text('Je suis', style: theme.textTheme.labelLarge),
-                    const SizedBox(height: 8),
-                    SegmentedButton<UserRole>(
-                      segments: [
-                        for (final role in UserRole.values)
-                          ButtonSegment(value: role, label: Text(role.label)),
-                      ],
-                      selected: {_role},
-                      onSelectionChanged: (selection) =>
-                          setState(() => _role = selection.first),
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      key: const Key('register-password'),
-                      controller: _passwordController,
-                      obscureText: true,
-                      textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                        labelText: 'Mot de passe',
-                        helperText: 'Au moins 8 caractères',
-                      ),
-                      validator: _validate('password', Validators.password),
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      key: const Key('register-confirm'),
-                      controller: _confirmController,
-                      obscureText: true,
-                      textInputAction: TextInputAction.done,
-                      onFieldSubmitted: (_) => _submit(),
-                      decoration: const InputDecoration(
-                        labelText: 'Confirmer le mot de passe',
-                      ),
-                      validator: (value) => value == _passwordController.text
-                          ? null
-                          : 'Les mots de passe ne correspondent pas',
-                    ),
-                    if (_error != null) ...[
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: CarteFormulaire(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Center(child: LogoMarque()),
                       const SizedBox(height: 16),
                       Text(
-                        _error!,
+                        'Créer un compte',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: theme.colorScheme.error),
+                        style: theme.textTheme.headlineMedium,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Rejoignez la plateforme Smart AgroTech Sénégal.',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: Couleurs.ardoise500,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      TextFormField(
+                        key: const Key('register-prenom'),
+                        controller: _prenomController,
+                        textCapitalization: TextCapitalization.words,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(labelText: 'Prénom'),
+                        validator: _validate('prenom', Validators.required),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        key: const Key('register-nom'),
+                        controller: _nomController,
+                        textCapitalization: TextCapitalization.words,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(labelText: 'Nom'),
+                        validator: _validate('nom', Validators.required),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        key: const Key('register-email'),
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(
+                          labelText: 'Adresse e-mail',
+                          hintText: 'exemple@domaine.sn',
+                        ),
+                        validator: _validate('email', Validators.email),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        key: const Key('register-telephone'),
+                        controller: _telephoneController,
+                        keyboardType: TextInputType.phone,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(
+                          labelText: 'Téléphone',
+                          hintText: '77 123 45 67',
+                        ),
+                        validator: _validate('telephone', Validators.telephone),
+                      ),
+                      const SizedBox(height: 16),
+                      Text('Je suis', style: theme.textTheme.labelLarge),
+                      const SizedBox(height: 8),
+                      SegmentedButton<UserRole>(
+                        segments: [
+                          for (final role in UserRole.values)
+                            ButtonSegment(value: role, label: Text(role.label)),
+                        ],
+                        selected: {_role},
+                        onSelectionChanged: (selection) =>
+                            setState(() => _role = selection.first),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        key: const Key('register-password'),
+                        controller: _passwordController,
+                        obscureText: true,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(
+                          labelText: 'Mot de passe',
+                          helperText: 'Au moins 8 caractères',
+                        ),
+                        validator: _validate('password', Validators.password),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        key: const Key('register-confirm'),
+                        controller: _confirmController,
+                        obscureText: true,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) => _submit(),
+                        decoration: const InputDecoration(
+                          labelText: 'Confirmer le mot de passe',
+                        ),
+                        validator: (value) => value == _passwordController.text
+                            ? null
+                            : 'Les mots de passe ne correspondent pas',
+                      ),
+                      if (_error != null) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          _error!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: theme.colorScheme.error),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
+                      FilledButton(
+                        key: const Key('register-submit'),
+                        onPressed: _loading ? null : _submit,
+                        child: _loading
+                            ? const SizedBox.square(
+                                dimension: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('S\'inscrire'),
                       ),
                     ],
-                    const SizedBox(height: 24),
-                    FilledButton(
-                      key: const Key('register-submit'),
-                      onPressed: _loading ? null : _submit,
-                      child: _loading
-                          ? const SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('S\'inscrire'),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

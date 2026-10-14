@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_agrotech/app.dart';
 import 'package:smart_agrotech/core/notification_service.dart';
 import 'package:smart_agrotech/core/services.dart';
+import 'package:smart_agrotech/core/theme.dart';
 import 'package:smart_agrotech/core/token_storage.dart';
 import 'package:smart_agrotech/features/auth/mock_auth_repository.dart';
 
@@ -22,6 +23,7 @@ class FakeNotifier implements Notifier {
 /// Lance l'application en mode démo, sans latence simulée.
 Future<FakeNotifier> pumpApp(WidgetTester tester) async {
   SharedPreferences.setMockInitialValues({});
+  AppTheme.policesWeb = false;
   final notifier = FakeNotifier();
   final services = AppServices.create(
     storage: InMemoryTokenStorage(),
@@ -64,5 +66,16 @@ Future<void> appuyer(WidgetTester tester, Key key) async {
   await tester.ensureVisible(find.byKey(key));
   await tester.pumpAndSettle();
   await tester.tap(find.byKey(key));
+  await tester.pumpAndSettle();
+}
+
+/// Fait défiler la page jusqu'à un élément (les listes ne construisent que
+/// ce qui est visible).
+Future<void> voir(WidgetTester tester, Finder finder) async {
+  await tester.scrollUntilVisible(
+    finder,
+    300,
+    scrollable: find.byType(Scrollable).first,
+  );
   await tester.pumpAndSettle();
 }
