@@ -79,7 +79,7 @@ Les erreurs de validation (`{ "email": ["Message"] }`) sont affichées sous le c
 
 ### Météo
 
-Les prévisions viennent d'OpenWeatherMap via le backend. Sans `WEATHER_API_KEY` dans `backend/.env`, l'API répond 503 et l'onglet Prévisions affiche le message du serveur. Les rappels de récolte et de vaccination fonctionnent sans cette clé.
+Les prévisions viennent d'OpenWeatherMap via le backend. Sans `WEATHER_API_KEY` dans `backend/.env`, l'API répond 503 et l'onglet Prévisions affiche « Météo indisponible pour le moment. ». Les rappels de récolte et de vaccination fonctionnent sans cette clé.
 
 ### Notifications de rappel (RF-27)
 

@@ -185,7 +185,7 @@ void main() {
         isA<ApiException>().having(
           (e) => e.message,
           'message',
-          'Clé WEATHER_API_KEY non configurée.',
+          'Météo indisponible pour le moment.',
         ),
       ),
     );

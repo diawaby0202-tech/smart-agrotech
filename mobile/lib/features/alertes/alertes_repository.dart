@@ -1,5 +1,8 @@
 import '../../core/api_client.dart';
+import '../../core/api_exception.dart';
 import 'alertes_models.dart';
+
+const meteoIndisponible = 'Météo indisponible pour le moment.';
 
 abstract class AlertesRepository {
   /// Prévisions sur 5 jours et risques détectés pour [ville].
@@ -23,13 +26,22 @@ class ApiAlertesRepository implements AlertesRepository {
   final ApiClient _client;
 
   @override
-  Future<Meteo> meteo(String ville) => _client.call((dio) async {
-    final response = await dio.get(
-      '/meteo/',
-      queryParameters: {'ville': ville},
-    );
-    return Meteo.fromJson(Map<String, dynamic>.from(response.data as Map));
-  });
+  Future<Meteo> meteo(String ville) async {
+    try {
+      return await _client.call((dio) async {
+        final response = await dio.get(
+          '/meteo/',
+          queryParameters: {'ville': ville},
+        );
+        return Meteo.fromJson(Map<String, dynamic>.from(response.data as Map));
+      });
+    } on ApiException catch (e) {
+      // 503 : clé météo absente ou service OpenWeatherMap injoignable. Le
+      // détail technique du serveur n'aide pas l'utilisateur.
+      if (e.statusCode != 503) rethrow;
+      throw ApiException(meteoIndisponible, statusCode: 503);
+    }
+  }
 
   @override
   Future<List<Alerte>> alertes() => _client.call(
