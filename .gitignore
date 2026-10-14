@@ -3,3 +3,5 @@ backend/venv/
 backend/db.sqlite3
 backend/**/__pycache__/
 frontend/node_modules/
+SCENARIO_DEMO.md
+SCENARIO_DEMO_sauvegarde.md
