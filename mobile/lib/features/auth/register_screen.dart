@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/api_exception.dart';
@@ -7,6 +8,8 @@ import 'user.dart';
 import 'validators.dart';
 
 /// Écran d'inscription (RF-01) : nom, prénom, email, téléphone, mot de passe.
+/// Une fois le compte créé, l'utilisateur est renvoyé vers l'écran de
+/// connexion, qui reçoit son email.
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -49,12 +52,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _loading = true);
+    final email = _emailController.text.trim();
     try {
       await context.read<AuthProvider>().register(
         RegisterData(
           nom: _nomController.text.trim(),
           prenom: _prenomController.text.trim(),
-          email: _emailController.text.trim(),
+          email: email,
           telephone: _telephoneController.text.replaceAll(
             RegExp(r'[\s.-]'),
             '',
@@ -63,6 +67,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
           role: _role,
         ),
       );
+      if (!mounted) return;
+      if (context.canPop()) {
+        context.pop(email);
+      } else {
+        context.go('/connexion');
+      }
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {

@@ -41,11 +41,12 @@ void main() {
     expect(storage.access, isNull);
   });
 
-  test('inscription puis connexion automatique', () async {
-    final user = await repository.register(nouveau);
+  test('inscription : compte créé sans connexion automatique', () async {
+    await repository.register(nouveau);
+    expect(storage.access, isNull);
 
+    final user = await repository.login(nouveau.email, nouveau.password);
     expect(user.role, UserRole.acheteur);
-    expect(storage.access, isNotNull);
   });
 
   test('refuse un email déjà utilisé', () async {

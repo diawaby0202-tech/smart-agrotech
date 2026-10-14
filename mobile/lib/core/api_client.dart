@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import 'api_exception.dart';
 import 'config.dart';
 import 'token_storage.dart';
 
@@ -29,7 +30,13 @@ class ApiClient {
   static const loginPath = '/auth/login/';
   static const registerPath = '/auth/register/';
   static const refreshPath = '/auth/refresh/';
-  static const _publicPaths = {loginPath, registerPath, refreshPath};
+  static const logoutPath = '/auth/logout/';
+  static const _publicPaths = {
+    loginPath,
+    registerPath,
+    refreshPath,
+    logoutPath,
+  };
   static const _retriedKey = 'retried';
 
   final Dio dio;
@@ -95,6 +102,15 @@ class ApiClient {
       return access;
     } on DioException {
       return null;
+    }
+  }
+
+  /// Exécute un appel et convertit les erreurs réseau en [ApiException].
+  Future<T> call<T>(Future<T> Function(Dio dio) request) async {
+    try {
+      return await request(dio);
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
     }
   }
 
