@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/alertes/meteo_screen.dart';
 import '../features/auth/auth_provider.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
-import '../features/home/coming_soon_screen.dart';
+import '../features/cultures/cultures_screen.dart';
+import '../features/elevage/elevage_screen.dart';
 import '../features/home/dashboard_screen.dart';
 import '../features/home/home_shell.dart';
+import '../features/marche/marche_screen.dart';
 
 const _publicRoutes = {'/connexion', '/inscription'};
 
@@ -49,25 +52,10 @@ GoRouter createRouter(AuthProvider auth) {
             HomeShell(navigationShell: navigationShell),
         branches: [
           _branch('/', const DashboardScreen()),
-          _branch(
-            '/cultures',
-            const ComingSoonScreen(titre: 'Cultures', icon: Icons.grass),
-          ),
-          _branch(
-            '/elevage',
-            const ComingSoonScreen(titre: 'Élevage', icon: Icons.pets),
-          ),
-          _branch(
-            '/meteo',
-            const ComingSoonScreen(
-              titre: 'Météo et alertes',
-              icon: Icons.cloud,
-            ),
-          ),
-          _branch(
-            '/marche',
-            const ComingSoonScreen(titre: 'Marché', icon: Icons.storefront),
-          ),
+          _branch('/cultures', const CulturesScreen()),
+          _branch('/elevage', const ElevageScreen()),
+          _branch('/meteo', const MeteoScreen()),
+          _branch('/marche', const MarcheScreen()),
         ],
       ),
     ],

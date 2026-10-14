@@ -63,7 +63,22 @@ class ApiAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> logout() => _storage.clear();
+  Future<void> logout() async {
+    // Invalide le refresh token côté serveur ; la déconnexion locale a lieu
+    // même si le serveur est injoignable.
+    final refresh = await _storage.readRefreshToken();
+    if (refresh != null) {
+      try {
+        await _client.dio.post(
+          ApiClient.logoutPath,
+          data: {'refresh': refresh},
+        );
+      } on DioException {
+        // Ignoré : le token expirera de lui-même.
+      }
+    }
+    await _storage.clear();
+  }
 
   Future<User> _fetchProfile() async {
     final response = await _client.dio.get('/users/me/');

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/notification_service.dart';
 import '../auth/auth_provider.dart';
 
 /// Accueil de l'utilisateur connecté : raccourcis vers les modules.
@@ -69,7 +70,17 @@ class DashboardScreen extends StatelessWidget {
                 leading: Icon(module.icon, color: theme.colorScheme.primary),
                 title: Text(module.titre),
                 subtitle: Text(module.description),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: module.route == '/meteo'
+                    ? ValueListenableBuilder<int>(
+                        valueListenable: context.read<RappelService>().nonLues,
+                        builder: (context, nonLues, child) => Badge(
+                          isLabelVisible: nonLues > 0,
+                          label: Text('$nonLues'),
+                          child: child,
+                        ),
+                        child: const Icon(Icons.chevron_right),
+                      )
+                    : const Icon(Icons.chevron_right),
                 onTap: () => context.go(module.route),
               ),
             ),

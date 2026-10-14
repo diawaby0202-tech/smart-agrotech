@@ -41,32 +41,53 @@ flutter test
 ```
 lib/
 ├── main.dart                  Point d'entrée : choisit mock ou API
-├── app.dart                   MaterialApp, thème
+├── app.dart                   MaterialApp, thème, synchronisation des rappels
 ├── core/
 │   ├── config.dart            USE_MOCK, API_BASE_URL
+│   ├── services.dart          Crée les dépôts (mock ou API) au démarrage
 │   ├── api_client.dart        Client HTTP (Dio) + token JWT + refresh
 │   ├── api_exception.dart     Erreurs de l'API lisibles par l'utilisateur
 │   ├── token_storage.dart     Stockage chiffré des tokens
-│   └── router.dart            Routes (go_router) + redirection selon la connexion
+│   ├── notification_service.dart  Notifications de rappel et d'alerte
+│   ├── router.dart            Routes (go_router) + redirection selon la connexion
+│   ├── format.dart            Dates, nombres et prix (API ↔ affichage)
+│   └── widgets.dart           Widgets partagés (chargement, formulaire, date)
 └── features/
     ├── auth/                  Connexion, inscription, état de session
-    └── home/                  Barre d'onglets, accueil, écrans provisoires
+    ├── home/                  Barre d'onglets, accueil
+    ├── cultures/              Parcelles, étapes, calendrier des récoltes
+    ├── elevage/               Animaux / lots, suivi sanitaire, échéances
+    ├── alertes/               Prévisions météo, risques, historique des alertes
+    └── marche/                Annonces : recherche, publication, contact vendeur
 ```
 
-Chaque module à venir (cultures, élevage, météo, marché) aura son dossier dans `features/`, avec un dépôt « mock » et un dépôt « API » derrière la même interface, comme `auth/`.
+Chaque module a un dépôt « mock » (données fictives) et un dépôt « API » derrière la même interface : les écrans ne savent pas lequel est utilisé.
 
 ## Appels à l'API utilisés par l'app
 
-Vérifiés avec le code du backend (app `utilisateurs`, fusionnée dans `main`) :
+Vérifiés contre le backend en fonctionnement (`main`). Toutes les requêtes hors authentification portent l'en-tête `Authorization: Bearer <access>`.
 
-| Appel | Corps envoyé | Réponse |
-|---|---|---|
-| `POST /api/auth/register/` | `nom`, `prenom`, `email`, `telephone`, `password` (8 caractères min.), `role` (`producteur` ou `acheteur`) | 201 |
-| `POST /api/auth/login/` | `email`, `password` | `{ "access": "...", "refresh": "..." }` |
-| `POST /api/auth/refresh/` | `refresh` | `{ "access": "..." }` |
-| `GET /api/users/me/` | — (en-tête `Authorization: Bearer <access>`) | `id`, `nom`, `prenom`, `email`, `telephone`, `role`, `statut`, `date_inscription` |
+| Module | Appels |
+|---|---|
+| Authentification | `POST /api/auth/register/`, `POST /api/auth/login/`, `POST /api/auth/refresh/`, `POST /api/auth/logout/`, `GET /api/users/me/` |
+| Cultures | `GET` `POST /api/parcelles/`, `PATCH` `DELETE /api/parcelles/{id}/`, `GET /api/parcelles/calendrier/` |
+| Élevage | `GET` `POST /api/animaux/`, `PATCH` `DELETE /api/animaux/{id}/`, `GET /api/suivis-sanitaires/?animal=`, `POST /api/suivis-sanitaires/`, `DELETE /api/suivis-sanitaires/{id}/`, `GET /api/suivis-sanitaires/echeances/?jours=` |
+| Météo et alertes | `GET /api/meteo/?ville=`, `GET /api/alertes/`, `POST /api/alertes/generer/`, `POST /api/alertes/{id}/marquer_lue/`, `POST /api/alertes/tout_marquer_lu/` |
+| Marché | `GET /api/annonces/?q=&categorie=&zone=&prix_min=&prix_max=&statut=`, `GET /api/annonces/mes_annonces/`, `POST /api/annonces/`, `PATCH` `DELETE /api/annonces/{id}/` |
 
 Les erreurs de validation (`{ "email": ["Message"] }`) sont affichées sous le champ concerné, les erreurs générales (`{ "detail": "Message" }`) sous le formulaire.
+
+### Météo
+
+Les prévisions viennent d'OpenWeatherMap via le backend. Sans `WEATHER_API_KEY` dans `backend/.env`, l'API répond 503 et l'onglet Prévisions affiche le message du serveur. Les rappels de récolte et de vaccination fonctionnent sans cette clé.
+
+### Notifications de rappel (RF-27)
+
+À la connexion et à chaque ouverture de l'onglet Alertes, l'app demande au serveur de générer les alertes du jour (`/api/alertes/generer/`) puis affiche une notification pour chaque nouvelle alerte non lue. Limite connue : le backend n'a pas de service de push, donc aucune notification n'arrive tant que l'app est fermée.
+
+### Photos des annonces
+
+La photo est choisie dans la galerie et envoyée dans le champ `image` (multipart). Cet envoi n'a pas encore été testé sur un téléphone.
 
 ### Émulateur Android et `ALLOWED_HOSTS`
 
