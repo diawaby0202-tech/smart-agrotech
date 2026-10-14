@@ -36,6 +36,20 @@ class AuthProvider extends ChangeNotifier {
   /// Crée le compte sans connecter l'utilisateur.
   Future<void> register(RegisterData data) => _repository.register(data);
 
+  Future<void> updateProfile({
+    required String prenom,
+    required String nom,
+    required String telephone,
+  }) async {
+    _setUser(
+      await _repository.updateProfile(
+        prenom: prenom,
+        nom: nom,
+        telephone: telephone,
+      ),
+    );
+  }
+
   Future<void> logout() async {
     await _repository.logout();
     _setUser(null);

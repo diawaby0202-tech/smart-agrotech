@@ -269,6 +269,8 @@ class _CarteAnnonce extends StatelessWidget {
         if (annonce.quantite.isNotEmpty)
           LigneInfo('📦', 'Quantité : ${annonce.quantite}'),
         if (annonce.vendeurNom.isNotEmpty) LigneInfo('👤', annonce.vendeurNom),
+        if (annonce.vendeurTelephone.isNotEmpty)
+          LigneInfo('📞', formatTelephone(annonce.vendeurTelephone)),
         const SizedBox(height: 12),
         if (annonce.estProprietaire)
           Row(

@@ -6,6 +6,7 @@ import '../../core/design.dart';
 import '../../core/notification_service.dart';
 import '../../core/theme.dart';
 import '../auth/auth_provider.dart';
+import '../auth/profil_screen.dart';
 import '../auth/user.dart';
 
 /// Tableau de bord, comme la page « Tableau de bord » du site.
@@ -94,6 +95,12 @@ class DashboardScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
+            key: const Key('profil'),
+            tooltip: 'Mon profil',
+            icon: const Icon(Icons.account_circle_outlined),
+            onPressed: () => _ouvrirProfil(context),
+          ),
+          IconButton(
             key: const Key('logout'),
             tooltip: 'Déconnexion',
             icon: const Icon(Icons.logout),
@@ -126,6 +133,18 @@ class DashboardScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
+          if (user?.role == UserRole.admin) ...[
+            const Encadre(
+              icone: '🛡️',
+              texte:
+                  'Espace administrateur : vous disposez des droits de '
+                  'supervision. La gestion des comptes, la modération et les '
+                  'statistiques se font sur le site web.',
+              fond: Couleurs.infoClair,
+              couleur: Couleurs.info,
+            ),
+            const SizedBox(height: 12),
+          ],
           for (final module in modules)
             _CarteModule(
               icone: module.icone,
@@ -134,10 +153,40 @@ class DashboardScreen extends StatelessWidget {
               badge: module.route == '/meteo',
               onTap: () => context.go(module.route),
             ),
+          const SizedBox(height: 8),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Mon profil', style: theme.textTheme.titleLarge),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Retrouvez vos informations personnelles et mettez-les '
+                    'à jour à tout moment.',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: Couleurs.ardoise500,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton(
+                    key: const Key('voir-profil'),
+                    onPressed: () => _ouvrirProfil(context),
+                    child: const Text('Voir mon profil'),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
+
+  static void _ouvrirProfil(BuildContext context) => Navigator.of(
+    context,
+  ).push(MaterialPageRoute<void>(builder: (_) => const ProfilScreen()));
 }
 
 class _CarteModule extends StatelessWidget {

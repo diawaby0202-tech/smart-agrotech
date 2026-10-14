@@ -71,10 +71,14 @@ Future<void> appuyer(WidgetTester tester, Key key) async {
 
 /// Fait défiler la page jusqu'à un élément (les listes ne construisent que
 /// ce qui est visible).
-Future<void> voir(WidgetTester tester, Finder finder) async {
+Future<void> voir(
+  WidgetTester tester,
+  Finder finder, {
+  double pas = 300,
+}) async {
   await tester.scrollUntilVisible(
     finder,
-    300,
+    pas,
     scrollable: find.byType(Scrollable).first,
   );
   await tester.pumpAndSettle();

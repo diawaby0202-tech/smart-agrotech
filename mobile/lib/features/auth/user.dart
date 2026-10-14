@@ -1,13 +1,18 @@
-/// Rôles proposés à l'inscription sur mobile. Le rôle administrateur est
-/// réservé à la version web.
 enum UserRole {
   producteur('producteur', 'Agriculteur / Éleveur'),
-  acheteur('acheteur', 'Acheteur');
+  acheteur('acheteur', 'Acheteur'),
+
+  /// Compte créé avec `createsuperuser` côté backend. Il se connecte comme les
+  /// autres ; l'espace d'administration reste sur le site web.
+  admin('admin', 'Administrateur');
 
   const UserRole(this.apiValue, this.label);
 
   final String apiValue;
   final String label;
+
+  /// Rôles proposés à l'inscription : on ne s'inscrit pas administrateur.
+  static const inscription = [producteur, acheteur];
 
   static UserRole fromApi(String? value) => UserRole.values.firstWhere(
     (role) => role.apiValue == value,
@@ -23,6 +28,8 @@ class User {
     required this.email,
     required this.telephone,
     required this.role,
+    this.statut = '',
+    this.dateInscription,
   });
 
   final int id;
@@ -31,6 +38,10 @@ class User {
   final String email;
   final String telephone;
   final UserRole role;
+
+  /// Statut du compte : `valide`, `en_attente`, `refuse`, `suspendu`.
+  final String statut;
+  final DateTime? dateInscription;
 
   String get nomComplet => '$prenom $nom';
 
@@ -41,6 +52,19 @@ class User {
     email: json['email'] as String,
     telephone: json['telephone'] as String? ?? '',
     role: UserRole.fromApi(json['role'] as String?),
+    statut: json['statut'] as String? ?? '',
+    dateInscription: DateTime.tryParse('${json['date_inscription'] ?? ''}'),
+  );
+
+  User copyWith({String? nom, String? prenom, String? telephone}) => User(
+    id: id,
+    nom: nom ?? this.nom,
+    prenom: prenom ?? this.prenom,
+    email: email,
+    telephone: telephone ?? this.telephone,
+    role: role,
+    statut: statut,
+    dateInscription: dateInscription,
   );
 }
 

@@ -80,6 +80,22 @@ String formatPrix(int prix) {
   return '$buffer FCFA';
 }
 
+/// Numéro lisible : `771234567` devient `77 123 45 67`.
+String formatTelephone(String numero) {
+  var chiffres = numero.replaceAll(RegExp(r'[^0-9+]'), '');
+  var prefixe = '';
+  if (chiffres.startsWith('+221')) {
+    prefixe = '+221 ';
+    chiffres = chiffres.substring(4);
+  } else if (chiffres.startsWith('221') && chiffres.length == 12) {
+    prefixe = '+221 ';
+    chiffres = chiffres.substring(3);
+  }
+  if (chiffres.length != 9) return numero;
+  return '$prefixe${chiffres.substring(0, 2)} ${chiffres.substring(2, 5)} '
+      '${chiffres.substring(5, 7)} ${chiffres.substring(7)}';
+}
+
 /// Nombre de jours entre aujourd'hui et [date] (négatif si la date est passée).
 int joursRestants(DateTime date) {
   final now = DateTime.now();

@@ -175,7 +175,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const SizedBox(height: 8),
                       SegmentedButton<UserRole>(
                         segments: [
-                          for (final role in UserRole.values)
+                          for (final role in UserRole.inscription)
                             ButtonSegment(value: role, label: Text(role.label)),
                         ],
                         selected: {_role},

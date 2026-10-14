@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:smart_agrotech/features/marche/annonce_form_screen.dart';
 
 import 'helpers.dart';
 
@@ -132,6 +136,7 @@ void main() {
     await voir(tester, find.text('Tomates fraîches'));
     expect(find.text('Moutons Ladoum'), findsNothing);
 
+    await voir(tester, find.byKey(const Key('marche-vendre')), pas: -300);
     await tester.tap(find.byKey(const Key('marche-vendre')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('annonce-titre')), 'Oignons');
@@ -140,6 +145,18 @@ void main() {
     await tester.tap(find.text('Légumes').last);
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('annonce-prix')), '15000');
+
+    // Sans photo, l'annonce est refusée.
+    await appuyer(tester, const Key('annonce-submit'));
+    expect(find.text('Ajoutez une photo de votre produit.'), findsOneWidget);
+
+    // Photo choisie dans la galerie (simulée avec une photo du site).
+    AnnonceFormScreen.choisirImage = (_) async => XFile.fromData(
+      File('assets/img/marche-oignons.jpg').readAsBytesSync(),
+      name: 'oignons.jpg',
+    );
+    await appuyer(tester, const Key('annonce-galerie'));
+    expect(find.text('Ajoutez une photo de votre produit.'), findsNothing);
     await appuyer(tester, const Key('annonce-submit'));
 
     await tester.enterText(find.byKey(const Key('marche-recherche')), '');
@@ -163,6 +180,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Ibrahima Sow'), findsOneWidget);
+    expect(find.textContaining('76 444 55 66'), findsOneWidget);
     expect(find.byKey(const Key('annonce-appeler')), findsOneWidget);
   });
 }
