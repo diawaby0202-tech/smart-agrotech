@@ -1,8 +1,8 @@
 /**
- * Bandeau d'en-tête commun aux modules en maquette (Cultures, Élevage, ...).
- * Mentionne honnêtement qu'il s'agit d'un aperçu de démonstration.
+ * Bandeau d'en-tête commun aux modules (Cultures, Élevage, Alertes, Marché).
+ * Le badge « Aperçu démo » n'apparaît que si la page est encore une maquette.
  */
-export default function BandeauApercu({ icone, titre, texte }) {
+export default function BandeauApercu({ icone, titre, texte, apercu = false }) {
   return (
     <div className="bandeau-apercu">
       <span className="bandeau-apercu-icone" aria-hidden="true">{icone}</span>
@@ -10,7 +10,7 @@ export default function BandeauApercu({ icone, titre, texte }) {
         <h1>{titre}</h1>
         <p>{texte}</p>
       </div>
-      <span className="bandeau-apercu-badge">Aperçu démo</span>
+      {apercu && <span className="bandeau-apercu-badge">Aperçu démo</span>}
     </div>
   )
 }

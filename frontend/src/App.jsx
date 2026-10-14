@@ -22,12 +22,12 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>
-            {/* Pages publiques */}
+            {/* Accueil public ; modules réservés aux utilisateurs connectés */}
             <Route index element={<Accueil />} />
-            <Route path="/cultures" element={<Cultures />} />
-            <Route path="/elevage" element={<Elevage />} />
-            <Route path="/alertes" element={<Alertes />} />
-            <Route path="/marche" element={<Marche />} />
+            <Route path="/cultures" element={<RouteProtegee><Cultures /></RouteProtegee>} />
+            <Route path="/elevage" element={<RouteProtegee><Elevage /></RouteProtegee>} />
+            <Route path="/alertes" element={<RouteProtegee><Alertes /></RouteProtegee>} />
+            <Route path="/marche" element={<RouteProtegee><Marche /></RouteProtegee>} />
 
             {/* Authentification (reserve aux visiteurs) */}
             <Route

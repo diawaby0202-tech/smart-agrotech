@@ -1,0 +1,107 @@
+/* Styles des modules connectés à l'API (formulaires, fenêtres, états vides). */
+
+.modal-fond {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 30, 20, 0.55);
+}
+.modal-boite {
+  width: 100%;
+  max-width: 620px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding: 26px 28px;
+  border-radius: var(--rayon-lg);
+  background: var(--blanc);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+}
+.modal-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.modal-entete h2 { margin: 0; font-size: 1.25rem; }
+.modal-fermer {
+  border: 0;
+  background: transparent;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  color: inherit;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+.champ textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px 14px;
+  font: inherit;
+  border: 1.5px solid var(--bordure, #d1d5db);
+  border-radius: var(--rayon-sm);
+  resize: vertical;
+}
+.champ input[type='file'] { padding: 9px 10px; }
+
+.carte-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.etat-vide {
+  padding: 40px 20px;
+  text-align: center;
+  border: 2px dashed var(--vert-100, #dcfce7);
+  border-radius: var(--rayon-lg);
+}
+.etat-vide p { margin: 6px 0 0; opacity: 0.75; }
+
+.meteo-formulaire {
+  display: flex;
+  gap: 10px;
+  margin: 14px 0 4px;
+}
+.meteo-formulaire input {
+  flex: 1;
+  max-width: 260px;
+  padding: 9px 12px;
+  border: 1.5px solid var(--bordure, #d1d5db);
+  border-radius: var(--rayon-sm);
+  font: inherit;
+}
+.meteo-jour-pluie { font-size: 0.8rem; opacity: 0.8; }
+.carte-alerte.alerte-non-lue { box-shadow: 0 0 0 2px var(--vert-600); }
+.barre-actions-alertes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.case-mes-annonces {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+.carte-annonce-quantite { font-size: 0.85rem; opacity: 0.8; margin: 0; }
+.etiquette-vendue { background: #fee2e2; color: #991b1b; }
+
+@media (max-width: 640px) {
+  .modal-boite { padding: 20px 18px; }
+}
+
+/* L'étiquette de niveau est placée dans l'en-tête de la carte d'alerte,
+   pas en surimpression d'une image. */
+.carte-alerte-entete .etiquette-statut {
+  position: static;
+}
