@@ -15,11 +15,27 @@ flutter run
 Par défaut l'app tourne en **mode démo** (données fictives, aucun backend nécessaire).
 Compte de démonstration : `demo@agrotech.sn` / `demo1234`. Les comptes créés depuis l'écran d'inscription restent en mémoire jusqu'au redémarrage de l'app.
 
-### Brancher la vraie API
+### Brancher la vraie API (à utiliser pour la soutenance)
 
-```bash
-flutter run --dart-define=USE_MOCK=false
-```
+Pour montrer l'application avec les vraies données, et non les données fictives :
+
+1. Lancer le backend (voir le README principal) :
+
+   ```bash
+   cd backend
+   venv\Scripts\python manage.py runserver
+   ```
+
+2. Démarrer l'émulateur Android, puis dans un second terminal :
+
+   ```bash
+   cd mobile
+   flutter run --dart-define=USE_MOCK=false
+   ```
+
+L'écran de connexion n'affiche alors plus « Mode démo ». Le compte de démonstration n'existe pas dans la vraie base : créer un compte avec « S'inscrire ».
+
+Cette commande suppose que `10.0.2.2` figure dans `ALLOWED_HOSTS` côté backend. Si l'app affiche « Une erreur est survenue (code 400) », voir « Émulateur Android et `ALLOWED_HOSTS` » plus bas.
 
 | Variable | Valeur par défaut | Rôle |
 |---|---|---|
@@ -79,7 +95,7 @@ Les erreurs de validation (`{ "email": ["Message"] }`) sont affichées sous le c
 
 ### Météo
 
-Les prévisions viennent d'OpenWeatherMap via le backend. Sans `WEATHER_API_KEY` dans `backend/.env`, l'API répond 503 et l'onglet Prévisions affiche le message du serveur. Les rappels de récolte et de vaccination fonctionnent sans cette clé.
+Les prévisions viennent d'OpenWeatherMap via le backend. Sans `WEATHER_API_KEY` dans `backend/.env`, l'API répond 503 et l'onglet Prévisions affiche « Météo indisponible pour le moment. ». Les rappels de récolte et de vaccination fonctionnent sans cette clé.
 
 ### Notifications de rappel (RF-27)
 
@@ -91,7 +107,7 @@ La photo est choisie dans la galerie et envoyée dans le champ `image` (multipar
 
 ### Émulateur Android et `ALLOWED_HOSTS`
 
-Django refuse (erreur 400) les requêtes envoyées à `10.0.2.2` tant que cette adresse n'est pas dans `ALLOWED_HOSTS` (`backend/config/settings.py`). En attendant, on peut rediriger le port de l'émulateur vers le PC et utiliser `localhost` :
+Django refuse (erreur 400) les requêtes envoyées à `10.0.2.2` tant que cette adresse n'est pas dans `ALLOWED_HOSTS` (`backend/config/settings.py`). Tant que cette correction n'est pas dans votre version du backend, on peut rediriger le port de l'émulateur vers le PC et utiliser `localhost` :
 
 ```bash
 adb reverse tcp:8000 tcp:8000
