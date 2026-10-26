@@ -38,7 +38,7 @@ export default function TableauDeBord() {
         <span className="badge badge-vert" style={{ marginBottom: 12 }}>
           {libelleRole}
         </span>
-        <h1>{salutation}{prenom ? `, ${prenom}` : ''} 👋</h1>
+        <h1>{salutation()}{prenom ? `, ${prenom}` : ''} 👋</h1>
         <p>Voici un aperçu de votre espace Smart AgroTech.</p>
       </div>
 
