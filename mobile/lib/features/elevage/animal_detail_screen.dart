@@ -74,6 +74,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab-animal',
         onPressed: _addSuivi,
         icon: const Icon(Icons.add),
         label: const Text('Suivi sanitaire'),

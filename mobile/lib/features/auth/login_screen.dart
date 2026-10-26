@@ -7,6 +7,9 @@ import '../../core/config.dart';
 import 'auth_provider.dart';
 import 'mock_auth_repository.dart';
 import 'validators.dart';
+import '../../core/design.dart';
+import '../../core/theme.dart';
+import '../../core/widgets.dart';
 
 /// Écran de connexion (RF-02). La redirection vers l'accueil est faite par le
 /// routeur dès que [AuthProvider] passe à l'état connecté.
@@ -71,39 +74,52 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final marque = theme.textTheme.titleLarge?.copyWith(
+      fontWeight: FontWeight.w800,
+      color: Couleurs.encre,
+    );
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
+              constraints: const BoxConstraints(maxWidth: 400),
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Icon(
-                      Icons.agriculture,
-                      size: 72,
-                      color: theme.colorScheme.primary,
+                    const Center(child: LogoMarque(taille: 72)),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Smart', style: marque),
+                        TexteDegrade('AgroTech', style: marque),
+                      ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 36),
                     Text(
-                      'Smart AgroTech',
+                      'Connexion',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
+                        color: Couleurs.encre,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Connectez-vous à votre compte',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyLarge,
-                    ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
+                    if (_error != null) ...[
+                      Encadre(
+                        icone: '⚠️',
+                        texte: _error!,
+                        fond: Couleurs.dangerClair,
+                        couleur: Couleurs.danger,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     TextFormField(
                       key: const Key('login-email'),
                       controller: _emailController,
@@ -111,8 +127,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       textInputAction: TextInputAction.next,
                       autofillHints: const [AutofillHints.email],
                       decoration: const InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.email_outlined),
+                        labelText: 'E-mail',
+                        prefixIcon: Icon(Icons.mail_outline),
                       ),
                       validator: Validators.email,
                     ),
@@ -141,38 +157,28 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       validator: Validators.required,
                     ),
-                    if (_error != null) ...[
-                      const SizedBox(height: 16),
-                      Text(
-                        _error!,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: theme.colorScheme.error),
-                      ),
-                    ],
-                    const SizedBox(height: 24),
-                    FilledButton(
+                    const SizedBox(height: 28),
+                    SubmitButton(
                       key: const Key('login-submit'),
-                      onPressed: _loading ? null : _submit,
-                      child: _loading
-                          ? const SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Se connecter'),
+                      label: 'Se connecter',
+                      loading: _loading,
+                      onPressed: _submit,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     TextButton(
+                      key: const Key('login-inscription'),
                       onPressed: _loading ? null : _openRegister,
-                      child: const Text('Pas encore de compte ? S\'inscrire'),
+                      child: const Text('Créer un compte'),
                     ),
                     if (AppConfig.useMock) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
                       Text(
-                        'Mode démo (données fictives)\n'
-                        '${MockAuthRepository.demoEmail} / '
+                        'Démo : ${MockAuthRepository.demoEmail} / '
                         '${MockAuthRepository.demoPassword}',
                         textAlign: TextAlign.center,
-                        style: theme.textTheme.bodySmall,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Couleurs.ardoise400,
+                        ),
                       ),
                     ],
                   ],

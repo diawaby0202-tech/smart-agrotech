@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/design.dart';
 import '../../core/format.dart';
 import '../../core/widgets.dart';
 import 'annonce.dart';
 import 'annonce_form_screen.dart';
+import 'marche_screen.dart';
 
 /// Détail d'une annonce : contact du vendeur (RF-18) ou gestion par son
 /// propriétaire (RF-19). Renvoie `true` si l'annonce a été modifiée.
@@ -56,15 +58,10 @@ class AnnonceDetailScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
-          if (annonce.photoUrl.isNotEmpty)
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Image.network(
-                annonce.photoUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => const SizedBox.shrink(),
-              ),
-            ),
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: ImageSource(imageAnnonce(annonce)),
+          ),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -115,7 +112,8 @@ class AnnonceDetailScreen extends StatelessWidget {
                   ),
                   subtitle: Text(
                     [
-                      if (aUnTelephone) annonce.vendeurTelephone,
+                      if (aUnTelephone)
+                        '📞 ${formatTelephone(annonce.vendeurTelephone)}',
                       if (annonce.dateCreation != null)
                         'Publiée le ${formatDate(annonce.dateCreation)}',
                     ].join(' · '),

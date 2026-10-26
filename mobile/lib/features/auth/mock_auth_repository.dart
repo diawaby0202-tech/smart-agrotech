@@ -32,6 +32,7 @@ class MockAuthRepository implements AuthRepository {
         email: demoEmail,
         telephone: '771234567',
         role: UserRole.producteur,
+        statut: 'valide',
       ),
       demoPassword,
     ),
@@ -71,6 +72,8 @@ class MockAuthRepository implements AuthRepository {
           email: data.email,
           telephone: data.telephone,
           role: data.role,
+          statut: 'valide',
+          dateInscription: DateTime.now(),
         ),
         data.password,
       ),
@@ -82,6 +85,28 @@ class MockAuthRepository implements AuthRepository {
     final token = await _storage.readAccessToken();
     if (token == null || !token.startsWith(_tokenPrefix)) return null;
     return _find(token.substring(_tokenPrefix.length))?.user;
+  }
+
+  @override
+  Future<User> updateProfile({
+    required String prenom,
+    required String nom,
+    required String telephone,
+  }) async {
+    await Future<void>.delayed(delay);
+    final token = await _storage.readAccessToken();
+    final account = token == null || !token.startsWith(_tokenPrefix)
+        ? null
+        : _find(token.substring(_tokenPrefix.length));
+    if (account == null) {
+      throw ApiException('Session expirée.', statusCode: 401);
+    }
+    account.user = account.user.copyWith(
+      prenom: prenom,
+      nom: nom,
+      telephone: telephone,
+    );
+    return account.user;
   }
 
   @override
@@ -99,6 +124,6 @@ class MockAuthRepository implements AuthRepository {
 class _MockAccount {
   _MockAccount(this.user, this.password);
 
-  final User user;
+  User user;
   final String password;
 }

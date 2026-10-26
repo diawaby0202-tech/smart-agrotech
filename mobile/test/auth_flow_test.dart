@@ -27,7 +27,10 @@ void main() {
 
     await login(tester, MockAuthRepository.demoEmail, 'mauvais-mdp');
 
-    expect(find.text('Email ou mot de passe incorrect.'), findsOneWidget);
+    expect(
+      find.textContaining('Email ou mot de passe incorrect.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('connexion, navigation entre onglets puis déconnexion', (
@@ -36,21 +39,19 @@ void main() {
     await pumpApp(tester);
 
     await loginDemo(tester);
-    expect(find.text('Bonjour Awa'), findsOneWidget);
+    expect(find.textContaining('depuis un seul endroit'), findsOneWidget);
 
     await ouvrirOnglet(tester, 'Marché');
     expect(find.text('Arachide décortiquée'), findsOneWidget);
 
-    await ouvrirOnglet(tester, 'Accueil');
-    await tester.tap(find.byKey(const Key('logout')));
-    await tester.pumpAndSettle();
+    await ouvrirMenu(tester);
+    await appuyer(tester, const Key('menu-deconnexion'));
     expect(find.text('Se connecter'), findsOneWidget);
   });
 
   testWidgets('inscription : retour vers la connexion', (tester) async {
     await pumpApp(tester);
-    await tester.tap(find.text('Pas encore de compte ? S\'inscrire'));
-    await tester.pumpAndSettle();
+    await appuyer(tester, const Key('login-inscription'));
 
     const champs = {
       'register-prenom': 'Moussa',
@@ -78,6 +79,6 @@ void main() {
     );
     await tester.tap(find.byKey(const Key('login-submit')));
     await tester.pumpAndSettle();
-    expect(find.text('Bonjour Moussa'), findsOneWidget);
+    expect(find.textContaining('depuis un seul endroit'), findsOneWidget);
   });
 }

@@ -11,6 +11,10 @@ abstract class ElevageRepository {
 
   /// Historique sanitaire d'un animal, du plus récent au plus ancien.
   Future<List<SuiviSanitaire>> suivis(int animalId);
+
+  /// Tous les suivis de l'utilisateur, pour calculer l'état de santé de
+  /// chaque animal.
+  Future<List<SuiviSanitaire>> tousLesSuivis();
   Future<SuiviSanitaire> createSuivi(SuiviSanitaire suivi);
   Future<void> deleteSuivi(int id);
 
@@ -66,6 +70,10 @@ class ApiElevageRepository implements ElevageRepository {
       (await dio.get(_suivis, queryParameters: {'animal': animalId})).data,
     ),
   );
+
+  @override
+  Future<List<SuiviSanitaire>> tousLesSuivis() =>
+      _client.call((dio) async => _parseSuivis((await dio.get(_suivis)).data));
 
   @override
   Future<SuiviSanitaire> createSuivi(SuiviSanitaire suivi) => _client.call(
@@ -179,6 +187,9 @@ class MockElevageRepository implements ElevageRepository {
   Future<List<SuiviSanitaire>> suivis(int animalId) async =>
       _suivis.where((s) => s.animalId == animalId).toList()
         ..sort((a, b) => b.date.compareTo(a.date));
+
+  @override
+  Future<List<SuiviSanitaire>> tousLesSuivis() async => List.of(_suivis);
 
   @override
   Future<SuiviSanitaire> createSuivi(SuiviSanitaire suivi) async {

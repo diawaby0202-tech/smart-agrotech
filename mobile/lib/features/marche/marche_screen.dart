@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/design.dart';
 import '../../core/format.dart';
+import '../../core/theme.dart';
+import '../../core/visuels.dart';
 import '../../core/widgets.dart';
+import '../home/menu.dart';
+import '../auth/auth_provider.dart';
+import '../auth/user.dart';
 import 'annonce.dart';
 import 'annonce_detail_screen.dart';
 import 'annonce_form_screen.dart';
 import 'annonce_repository.dart';
 
-/// Module Marché : recherche d'annonces et gestion de ses propres annonces.
+/// Module Marché, sur le modèle de la page « Marché agricole » du site.
 class MarcheScreen extends StatefulWidget {
   const MarcheScreen({super.key});
 
@@ -18,9 +24,9 @@ class MarcheScreen extends StatefulWidget {
 
 class _MarcheScreenState extends State<MarcheScreen> {
   final _listKey = GlobalKey<AsyncViewState<List<Annonce>>>();
-  final _mesAnnoncesKey = GlobalKey<AsyncViewState<List<Annonce>>>();
   final _recherche = TextEditingController();
   FiltreAnnonces _filtre = const FiltreAnnonces();
+  bool _mesAnnonces = false;
 
   @override
   void dispose() {
@@ -28,14 +34,11 @@ class _MarcheScreenState extends State<MarcheScreen> {
     super.dispose();
   }
 
-  void _reload() {
-    _listKey.currentState?.reload();
-    _mesAnnoncesKey.currentState?.reload();
-  }
+  void _reload() => _listKey.currentState?.reload();
 
   void _setFiltre(FiltreAnnonces filtre) {
     setState(() => _filtre = filtre);
-    _listKey.currentState?.reload();
+    _reload();
   }
 
   FiltreAnnonces _avec({
@@ -50,18 +53,41 @@ class _MarcheScreenState extends State<MarcheScreen> {
     prixMax: _filtre.prixMax,
   );
 
-  Future<void> _openDetail(Annonce annonce) async {
-    final changed = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => AnnonceDetailScreen(annonce: annonce)),
-    );
+  /// « Mes annonces » montre toutes les annonces du vendeur (même vendues),
+  /// filtrées localement par catégorie et recherche.
+  Future<List<Annonce>> _load() async {
+    final repository = context.read<AnnonceRepository>();
+    if (!_mesAnnonces) return repository.list(_filtre);
+    final recherche = _filtre.recherche.toLowerCase();
+    return (await repository.mesAnnonces())
+        .where(
+          (a) =>
+              (_filtre.categorie == null || a.categorie == _filtre.categorie) &&
+              a.titre.toLowerCase().contains(recherche),
+        )
+        .toList();
+  }
+
+  Future<void> _ouvrir(Widget ecran) async {
+    final changed = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => ecran));
     if (changed == true) _reload();
   }
 
-  Future<void> _publier() async {
-    final changed = await Navigator.of(
+  Future<void> _supprimer(Annonce annonce) async {
+    final ok = await confirmer(
       context,
-    ).push<bool>(MaterialPageRoute(builder: (_) => const AnnonceFormScreen()));
-    if (changed == true) _reload();
+      titre: 'Supprimer l\'annonce ?',
+      message: '« ${annonce.titre} » ne sera plus visible sur le marché.',
+    );
+    if (!ok || !mounted) return;
+    try {
+      await context.read<AnnonceRepository>().delete(annonce.id!);
+      _reload();
+    } catch (e) {
+      if (mounted) showMessage(context, messageErreur(e));
+    }
   }
 
   Future<void> _openFiltres() async {
@@ -75,179 +101,193 @@ class _MarcheScreenState extends State<MarcheScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final repository = context.read<AnnonceRepository>();
+    final role = context.watch<AuthProvider>().user?.role;
+    final peutVendre = role != UserRole.acheteur;
 
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Marché'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Annonces'),
-              Tab(text: 'Mes annonces'),
-            ],
-          ),
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: _publier,
-          icon: const Icon(Icons.add),
-          label: const Text('Publier'),
-        ),
-        body: TabBarView(
-          children: [
-            Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                  child: TextField(
-                    key: const Key('marche-recherche'),
-                    controller: _recherche,
-                    textInputAction: TextInputAction.search,
-                    onSubmitted: (value) =>
-                        _setFiltre(_avec(recherche: value.trim())),
-                    decoration: InputDecoration(
-                      hintText: 'Rechercher un produit',
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: IconButton(
-                        tooltip: 'Zone et prix',
-                        icon: Badge(
-                          isLabelVisible: _filtre.aDesCriteresAvances,
-                          child: const Icon(Icons.tune),
+    return Scaffold(
+      appBar: const BarreMarque(),
+      body: SafeArea(
+        child: AsyncView<List<Annonce>>(
+          key: _listKey,
+          load: _load,
+          builder: (context, annonces) => ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            children: [
+              const BandeauModule(
+                icone: '🛒',
+                titre: 'Marché agricole',
+                texte:
+                    'Achetez et vendez des produits locaux, directement '
+                    'entre producteurs et acheteurs.',
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      key: const Key('marche-recherche'),
+                      controller: _recherche,
+                      textInputAction: TextInputAction.search,
+                      onSubmitted: (value) =>
+                          _setFiltre(_avec(recherche: value.trim())),
+                      decoration: InputDecoration(
+                        hintText: 'Rechercher un produit…',
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: IconButton(
+                          tooltip: 'Zone et prix',
+                          icon: Badge(
+                            isLabelVisible: _filtre.aDesCriteresAvances,
+                            child: const Icon(Icons.tune),
+                          ),
+                          onPressed: _openFiltres,
                         ),
-                        onPressed: _openFiltres,
                       ),
                     ),
                   ),
-                ),
-                SizedBox(
-                  height: 56,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    children: [
-                      for (final categorie in CategorieAnnonce.values)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: FilterChip(
-                            label: Text(categorie.label),
-                            selected: _filtre.categorie == categorie,
-                            onSelected: (selected) => _setFiltre(
-                              selected
-                                  ? _avec(categorie: categorie)
-                                  : _avec(effacerCategorie: true),
-                            ),
+                  if (peutVendre) ...[
+                    const SizedBox(width: 8),
+                    FilledButton(
+                      key: const Key('marche-vendre'),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 54),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                      ),
+                      onPressed: () => _ouvrir(const AnnonceFormScreen()),
+                      child: const Text('+ Vendre'),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 12),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (final categorie in [null, ...CategorieAnnonce.values])
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(categorie?.label ?? 'Tout'),
+                          selected: _filtre.categorie == categorie,
+                          showCheckmark: false,
+                          onSelected: (_) => _setFiltre(
+                            categorie == null
+                                ? _avec(effacerCategorie: true)
+                                : _avec(categorie: categorie),
                           ),
                         ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: AsyncView<List<Annonce>>(
-                    key: _listKey,
-                    load: () => repository.list(_filtre),
-                    builder: (context, annonces) => annonces.isEmpty
-                        ? const MessageView(
-                            icon: Icons.storefront,
-                            message: 'Aucune annonce ne correspond.',
-                          )
-                        : _AnnonceList(annonces: annonces, onTap: _openDetail),
-                  ),
-                ),
-              ],
-            ),
-            AsyncView<List<Annonce>>(
-              key: _mesAnnoncesKey,
-              load: repository.mesAnnonces,
-              builder: (context, annonces) => annonces.isEmpty
-                  ? const MessageView(
-                      icon: Icons.sell_outlined,
-                      message:
-                          'Vous n\'avez pas encore d\'annonce.\n'
-                          'Publiez votre premier produit.',
-                    )
-                  : _AnnonceList(
-                      annonces: annonces,
-                      onTap: _openDetail,
-                      afficherStatut: true,
+                      ),
+                    FilterChip(
+                      key: const Key('marche-mes-annonces'),
+                      label: const Text('Mes annonces'),
+                      selected: _mesAnnonces,
+                      onSelected: (valeur) {
+                        setState(() => _mesAnnonces = valeur);
+                        _reload();
+                      },
                     ),
-            ),
-          ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              if (annonces.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  child: Text(
+                    _mesAnnonces
+                        ? 'Vous n\'avez pas encore d\'annonce.'
+                        : 'Aucune annonce ne correspond.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              for (final annonce in annonces)
+                _CarteAnnonce(
+                  annonce: annonce,
+                  onOuvrir: () =>
+                      _ouvrir(AnnonceDetailScreen(annonce: annonce)),
+                  onModifier: () =>
+                      _ouvrir(AnnonceFormScreen(annonce: annonce)),
+                  onSupprimer: () => _supprimer(annonce),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _AnnonceList extends StatelessWidget {
-  const _AnnonceList({
-    required this.annonces,
-    required this.onTap,
-    this.afficherStatut = false,
+/// Photo de l'annonce, sinon l'image de sa catégorie (comme sur le site).
+String imageAnnonce(Annonce annonce) => annonce.photoUrl.isNotEmpty
+    ? annonce.photoUrl
+    : visuelCategorie(annonce.categorie.apiValue).image;
+
+class _CarteAnnonce extends StatelessWidget {
+  const _CarteAnnonce({
+    required this.annonce,
+    required this.onOuvrir,
+    required this.onModifier,
+    required this.onSupprimer,
   });
 
-  final List<Annonce> annonces;
-  final ValueChanged<Annonce> onTap;
-  final bool afficherStatut;
+  final Annonce annonce;
+  final VoidCallback onOuvrir;
+  final VoidCallback onModifier;
+  final VoidCallback onSupprimer;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(12, 4, 12, 88),
-      itemCount: annonces.length,
-      itemBuilder: (context, index) {
-        final annonce = annonces[index];
-        return Card(
-          clipBehavior: Clip.antiAlias,
-          child: ListTile(
-            onTap: () => onTap(annonce),
-            leading: AnnoncePhoto(url: annonce.photoUrl, size: 56),
-            title: Text(annonce.titre),
-            subtitle: Text(
-              [
-                annonce.categorie.label,
-                if (annonce.quantite.isNotEmpty) annonce.quantite,
-                if (annonce.zone.isNotEmpty) annonce.zone,
-                if (afficherStatut) annonce.statut.label,
-              ].join(' · '),
+    return CartePhoto(
+      image: imageAnnonce(annonce),
+      onTap: onOuvrir,
+      badgeHaut: annonce.zone.isEmpty
+          ? null
+          : Etiquette(
+              '📍 ${annonce.zone}',
+              fond: Colors.white,
+              couleur: Couleurs.encre,
             ),
-            trailing: Text(
-              formatPrix(annonce.prix),
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.primary,
-              ),
-            ),
+      badgeBas: annonce.statut == StatutAnnonce.disponible
+          ? null
+          : Etiquette(annonce.statut.label, fond: Couleurs.or500),
+      children: [
+        Text(
+          annonce.categorie.label.toUpperCase(),
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: Couleurs.vert600,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.8,
           ),
-        );
-      },
-    );
-  }
-}
-
-/// Photo d'une annonce, ou une icône si elle n'en a pas.
-class AnnoncePhoto extends StatelessWidget {
-  const AnnoncePhoto({super.key, required this.url, required this.size});
-
-  final String url;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    final placeholder = Container(
-      width: size,
-      height: size,
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: Icon(Icons.image_outlined, size: size / 2),
-    );
-    if (url.isEmpty) return placeholder;
-    return Image.network(
-      url,
-      width: size,
-      height: size,
-      fit: BoxFit.cover,
-      errorBuilder: (_, _, _) => placeholder,
+        ),
+        const SizedBox(height: 4),
+        Text(annonce.titre, style: theme.textTheme.titleMedium),
+        const SizedBox(height: 4),
+        Text(
+          formatPrix(annonce.prix),
+          style: theme.textTheme.titleLarge?.copyWith(color: Couleurs.vert600),
+        ),
+        if (annonce.quantite.isNotEmpty)
+          LigneInfo('📦', 'Quantité : ${annonce.quantite}'),
+        if (annonce.vendeurNom.isNotEmpty) LigneInfo('👤', annonce.vendeurNom),
+        if (annonce.vendeurTelephone.isNotEmpty)
+          LigneInfo('📞', formatTelephone(annonce.vendeurTelephone)),
+        const SizedBox(height: 12),
+        if (annonce.estProprietaire)
+          Row(
+            children: [
+              BoutonCarte('Modifier', onPressed: onModifier),
+              const SizedBox(width: 8),
+              BoutonCarte('Supprimer', danger: true, onPressed: onSupprimer),
+            ],
+          )
+        else
+          SizedBox(
+            width: double.infinity,
+            child: BoutonCarte('Contacter le vendeur', onPressed: onOuvrir),
+          ),
+      ],
     );
   }
 }

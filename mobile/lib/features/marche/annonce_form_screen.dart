@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import 'package:flutter/foundation.dart';
+
 import '../../core/api_exception.dart';
+import '../../core/design.dart' as design;
+import '../../core/theme.dart';
 import '../../core/widgets.dart';
+import '../../core/format.dart';
+import '../auth/auth_provider.dart';
+import '../auth/profil_screen.dart';
 import '../auth/validators.dart';
 import 'annonce.dart';
 import 'annonce_repository.dart';
@@ -14,6 +21,10 @@ class AnnonceFormScreen extends StatefulWidget {
   const AnnonceFormScreen({super.key, this.annonce});
 
   final Annonce? annonce;
+
+  /// Ouvre la galerie ou l'appareil photo. Remplaçable dans les tests.
+  static Future<XFile?> Function(ImageSource source) choisirImage = (source) =>
+      ImagePicker().pickImage(source: source, maxWidth: 1600, imageQuality: 80);
 
   @override
   State<AnnonceFormScreen> createState() => _AnnonceFormScreenState();
@@ -34,8 +45,10 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
   late StatutAnnonce _statut =
       widget.annonce?.statut ?? StatutAnnonce.disponible;
 
-  /// Photo choisie dans la galerie, pas encore envoyée.
+  /// Photo choisie sur le téléphone, pas encore envoyée.
   XFile? _photo;
+  Uint8List? _apercu;
+  String? _erreurPhoto;
 
   bool _loading = false;
   String? _error;
@@ -59,25 +72,53 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
     return _serverErrors['prix'];
   }
 
-  Future<void> _choisirPhoto() async {
+  Future<void> _choisirPhoto(ImageSource source) async {
     try {
-      final photo = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1600,
-        imageQuality: 80,
-      );
-      if (photo != null && mounted) setState(() => _photo = photo);
+      final photo = await AnnonceFormScreen.choisirImage(source);
+      if (photo == null) return;
+      final apercu = await photo.readAsBytes();
+      if (!mounted) return;
+      setState(() {
+        _photo = photo;
+        _apercu = apercu;
+        _erreurPhoto = null;
+      });
     } catch (_) {
-      if (mounted) showMessage(context, 'Impossible d\'ouvrir la galerie.');
+      if (mounted) {
+        showMessage(
+          context,
+          source == ImageSource.camera
+              ? 'Impossible d\'ouvrir l\'appareil photo.'
+              : 'Impossible d\'ouvrir la galerie.',
+        );
+      }
     }
   }
+
+  /// Le numéro affiché sur l'annonce est celui du profil du vendeur.
+  bool get _aUnTelephone =>
+      context.read<AuthProvider>().user?.telephone.isNotEmpty ?? false;
+
+  /// Une annonce doit toujours avoir une photo du produit.
+  bool get _aUnePhoto =>
+      _photo != null || (widget.annonce?.photoUrl.isNotEmpty ?? false);
 
   Future<void> _submit() async {
     setState(() {
       _serverErrors = const {};
       _error = null;
+      _erreurPhoto = _aUnePhoto ? null : 'Ajoutez une photo de votre produit.';
     });
-    if (!_formKey.currentState!.validate()) return;
+    final formulaireValide = _formKey.currentState!.validate();
+    if (!formulaireValide || !_aUnePhoto) return;
+    if (!_aUnTelephone) {
+      setState(
+        () => _error =
+            'Ajoutez votre numéro de téléphone dans « Mon profil » : les '
+            'acheteurs en ont besoin pour vous contacter.',
+      );
+      return;
+    }
 
     final annonce = Annonce(
       id: widget.annonce?.id,
@@ -132,9 +173,6 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final aUnePhoto =
-        _photo != null || (widget.annonce?.photoUrl.isNotEmpty ?? false);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEdit ? 'Modifier l\'annonce' : 'Publier une annonce'),
@@ -222,21 +260,15 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
               ),
             ],
             const SizedBox(height: 16),
-            OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-              ),
-              onPressed: _choisirPhoto,
-              icon: const Icon(Icons.photo_library_outlined),
-              label: Text(
-                _photo != null
-                    ? 'Photo choisie : ${_photo!.name}'
-                    : aUnePhoto
-                    ? 'Remplacer la photo'
-                    : 'Ajouter une photo',
-                overflow: TextOverflow.ellipsis,
-              ),
+            _ZonePhoto(
+              apercu: _apercu,
+              photoExistante: widget.annonce?.photoUrl ?? '',
+              erreur: _erreurPhoto,
+              onGalerie: () => _choisirPhoto(ImageSource.gallery),
+              onCamera: () => _choisirPhoto(ImageSource.camera),
             ),
+            const SizedBox(height: 16),
+            const _CoordonneesVendeur(),
             if (_serverErrors['image'] != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
@@ -261,6 +293,158 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Photo de l'annonce : aperçu, puis choix dans la galerie ou prise de vue.
+class _ZonePhoto extends StatelessWidget {
+  const _ZonePhoto({
+    required this.apercu,
+    required this.photoExistante,
+    required this.erreur,
+    required this.onGalerie,
+    required this.onCamera,
+  });
+
+  final Uint8List? apercu;
+  final String photoExistante;
+  final String? erreur;
+  final VoidCallback onGalerie;
+  final VoidCallback onCamera;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final image = apercu != null
+        ? Image.memory(apercu!, fit: BoxFit.cover)
+        : photoExistante.isNotEmpty
+        ? design.ImageSource(photoExistante)
+        : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('Photo du produit *', style: theme.textTheme.labelLarge),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            height: 180,
+            decoration: BoxDecoration(
+              color: Couleurs.ardoise100,
+              border: Border.all(
+                color: erreur != null ? Couleurs.danger : Couleurs.ardoise200,
+              ),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child:
+                image ??
+                const Center(
+                  child: Text(
+                    '📷  Aucune photo',
+                    style: TextStyle(color: Couleurs.ardoise500),
+                  ),
+                ),
+          ),
+        ),
+        if (erreur != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              erreur!,
+              style: TextStyle(color: theme.colorScheme.error),
+            ),
+          ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                key: const Key('annonce-galerie'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                onPressed: onGalerie,
+                icon: const Icon(Icons.photo_library_outlined),
+                label: const Text('Galerie'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                key: const Key('annonce-camera'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                onPressed: onCamera,
+                icon: const Icon(Icons.photo_camera_outlined),
+                label: const Text('Appareil photo'),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Coordonnées que les acheteurs verront sur l'annonce (nom et téléphone du
+/// profil), avec un accès direct au profil pour les compléter.
+class _CoordonneesVendeur extends StatelessWidget {
+  const _CoordonneesVendeur();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final user = context.watch<AuthProvider>().user;
+    final telephone = user?.telephone ?? '';
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: telephone.isEmpty ? Couleurs.dangerClair : Couleurs.vert50,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: telephone.isEmpty ? Couleurs.danger : Couleurs.vert100,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Vos coordonnées sur l\'annonce',
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text('👤  ${user?.nomComplet ?? ''}'),
+          const SizedBox(height: 2),
+          Text(
+            telephone.isEmpty
+                ? '📞  Aucun numéro dans votre profil'
+                : '📞  ${formatTelephone(telephone)}',
+            style: TextStyle(
+              color: telephone.isEmpty ? Couleurs.danger : null,
+              fontWeight: telephone.isEmpty ? FontWeight.w700 : null,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            key: const Key('annonce-modifier-profil'),
+            style: TextButton.styleFrom(padding: EdgeInsets.zero),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const ProfilScreen()),
+            ),
+            child: Text(
+              telephone.isEmpty
+                  ? 'Ajouter mon numéro dans « Mon profil »'
+                  : 'Modifier dans « Mon profil »',
+            ),
+          ),
+        ],
       ),
     );
   }
