@@ -7,6 +7,7 @@ import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/cultures/cultures_screen.dart';
 import '../features/elevage/elevage_screen.dart';
+import '../features/home/accueil_screen.dart';
 import '../features/home/dashboard_screen.dart';
 import '../features/home/home_shell.dart';
 import '../features/marche/marche_screen.dart';
@@ -47,11 +48,15 @@ GoRouter createRouter(AuthProvider auth) {
         path: '/inscription',
         builder: (context, state) => const RegisterScreen(),
       ),
+      GoRoute(
+        path: '/tableau-de-bord',
+        builder: (context, state) => const DashboardScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             HomeShell(navigationShell: navigationShell),
         branches: [
-          _branch('/', const DashboardScreen()),
+          _branch('/', const AccueilScreen()),
           _branch('/cultures', const CulturesScreen()),
           _branch('/elevage', const ElevageScreen()),
           _branch('/meteo', const MeteoScreen()),

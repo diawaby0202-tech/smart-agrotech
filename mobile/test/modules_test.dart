@@ -14,7 +14,49 @@ void main() {
     await pumpApp(tester);
     await loginDemo(tester);
 
-    expect(find.textContaining(', Awa 👋'), findsOneWidget);
+    expect(find.textContaining('depuis un seul endroit'), findsOneWidget);
+    expect(
+      find.textContaining('Gérez vos cultures, votre bétail'),
+      findsOneWidget,
+    );
+    await voir(tester, find.text('Une plateforme, quatre modules'));
+    await voir(tester, find.text('Cultures & récoltes'));
+
+    // « Découvrir » ouvre l'onglet du module.
+    await tester.tap(find.text('Cultures & récoltes'));
+    await tester.pumpAndSettle();
+    expect(find.text('Suivi des cultures'), findsOneWidget);
+  });
+
+  testWidgets('menu : mêmes liens que l\'en-tête du site', (tester) async {
+    await pumpApp(tester);
+    await loginDemo(tester);
+
+    await ouvrirMenu(tester);
+    for (final lien in [
+      'Accueil',
+      'Cultures',
+      'Élevage',
+      'Alertes météo',
+      'Marché',
+      'Tableau de bord',
+      'Mon profil',
+      'Déconnexion',
+    ]) {
+      expect(
+        find.descendant(of: find.byType(Drawer), matching: find.text(lien)),
+        findsOneWidget,
+      );
+    }
+
+    // Un lien du menu change d'onglet.
+    await tester.tap(find.byKey(const Key('menu-onglet-2')));
+    await tester.pumpAndSettle();
+    expect(find.text('Gestion de l’élevage'), findsOneWidget);
+
+    // Le tableau de bord reste accessible depuis le menu.
+    await ouvrirMenu(tester);
+    await appuyer(tester, const Key('menu-tableau-de-bord'));
     expect(find.text('Mes parcelles'), findsOneWidget);
     expect(find.text('Mon élevage'), findsOneWidget);
   });
@@ -183,4 +225,42 @@ void main() {
     expect(find.textContaining('76 444 55 66'), findsOneWidget);
     expect(find.byKey(const Key('annonce-appeler')), findsOneWidget);
   });
+
+  testWidgets('bouton Retour : ferme le menu puis revient vers Accueil', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await loginDemo(tester);
+
+    // Menu ouvert : Retour le ferme sans quitter l'app.
+    await ouvrirMenu(tester);
+    expect(find.byType(Drawer), findsOneWidget);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byType(Drawer), findsNothing);
+    expect(find.textContaining('depuis un seul endroit'), findsOneWidget);
+
+    // Depuis un autre onglet, Retour ramène à l'Accueil.
+    await ouvrirOnglet(tester, 'Élevage');
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.textContaining('depuis un seul endroit'), findsOneWidget);
+  });
+
+  testWidgets(
+    'profil ouvert après Cultures et Élevage, sans conflit de boutons',
+    (tester) async {
+      await pumpApp(tester);
+      await loginDemo(tester);
+      await ouvrirOnglet(tester, 'Cultures');
+      await ouvrirOnglet(tester, 'Élevage');
+
+      // Les deux boutons ronds restent montés : la transition vers le profil
+      // échouait quand ils partageaient le même identifiant d'animation.
+      await tester.tap(find.byKey(const Key('profil')));
+      await tester.pumpAndSettle();
+      expect(find.text('Informations'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

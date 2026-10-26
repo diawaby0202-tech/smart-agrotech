@@ -57,6 +57,10 @@ class AppTheme {
   /// dans les tests, qui n'ont pas accès à Internet.
   static bool policesWeb = true;
 
+  /// Animations décoratives en boucle (photo d'accueil). Coupées dans les
+  /// tests, qui attendent que l'écran soit immobile.
+  static bool animations = true;
+
   static TextTheme _textes() {
     final base = ThemeData.light().textTheme.apply(
       bodyColor: Couleurs.ardoise700,

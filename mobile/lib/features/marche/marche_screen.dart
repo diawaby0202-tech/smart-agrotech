@@ -6,6 +6,7 @@ import '../../core/format.dart';
 import '../../core/theme.dart';
 import '../../core/visuels.dart';
 import '../../core/widgets.dart';
+import '../home/menu.dart';
 import '../auth/auth_provider.dart';
 import '../auth/user.dart';
 import 'annonce.dart';
@@ -104,6 +105,7 @@ class _MarcheScreenState extends State<MarcheScreen> {
     final peutVendre = role != UserRole.acheteur;
 
     return Scaffold(
+      appBar: const BarreMarque(),
       body: SafeArea(
         child: AsyncView<List<Annonce>>(
           key: _listKey,

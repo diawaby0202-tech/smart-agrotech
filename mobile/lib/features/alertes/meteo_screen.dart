@@ -7,6 +7,7 @@ import '../../core/notification_service.dart';
 import '../../core/theme.dart';
 import '../../core/visuels.dart';
 import '../../core/widgets.dart';
+import '../home/menu.dart';
 import 'alertes_models.dart';
 import 'alertes_repository.dart';
 
@@ -58,6 +59,7 @@ class _MeteoScreenState extends State<MeteoScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      appBar: const BarreMarque(),
       body: SafeArea(
         child: AsyncView<_Donnees>(
           key: _key,

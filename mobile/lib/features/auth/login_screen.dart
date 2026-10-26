@@ -74,125 +74,115 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final marque = theme.textTheme.titleLarge?.copyWith(
+      fontWeight: FontWeight.w800,
+      color: Couleurs.encre,
+    );
 
     return Scaffold(
-      backgroundColor: Couleurs.vert50,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 440),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const EnteteMarque(),
-                  const SizedBox(height: 24),
-                  CarteFormulaire(
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Center(child: LogoMarque()),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Connexion',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.headlineMedium,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Accédez à votre espace Smart AgroTech.',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: Couleurs.ardoise500,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          if (_error != null) ...[
-                            Encadre(
-                              icone: '⚠️',
-                              texte: _error!,
-                              fond: Couleurs.dangerClair,
-                              couleur: Couleurs.danger,
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                          TextFormField(
-                            key: const Key('login-email'),
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            autofillHints: const [AutofillHints.email],
-                            decoration: const InputDecoration(
-                              labelText: 'Adresse e-mail',
-                              hintText: 'exemple@domaine.sn',
-                            ),
-                            validator: Validators.email,
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            key: const Key('login-password'),
-                            controller: _passwordController,
-                            obscureText: _obscurePassword,
-                            textInputAction: TextInputAction.done,
-                            autofillHints: const [AutofillHints.password],
-                            onFieldSubmitted: (_) => _submit(),
-                            decoration: InputDecoration(
-                              labelText: 'Mot de passe',
-                              hintText: 'Votre mot de passe',
-                              suffixIcon: IconButton(
-                                tooltip: _obscurePassword
-                                    ? 'Afficher'
-                                    : 'Masquer',
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility_outlined
-                                      : Icons.visibility_off_outlined,
-                                ),
-                                onPressed: () => setState(
-                                  () => _obscurePassword = !_obscurePassword,
-                                ),
-                              ),
-                            ),
-                            validator: Validators.required,
-                          ),
-                          const SizedBox(height: 24),
-                          SubmitButton(
-                            key: const Key('login-submit'),
-                            label: 'Se connecter',
-                            loading: _loading,
-                            onPressed: _submit,
-                          ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            alignment: WrapAlignment.center,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              const Text('Pas encore de compte ?'),
-                              TextButton(
-                                key: const Key('login-inscription'),
-                                onPressed: _loading ? null : _openRegister,
-                                child: const Text('Créer un compte'),
-                              ),
-                            ],
-                          ),
-                        ],
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Center(child: LogoMarque(taille: 72)),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Smart', style: marque),
+                        TexteDegrade('AgroTech', style: marque),
+                      ],
+                    ),
+                    const SizedBox(height: 36),
+                    Text(
+                      'Connexion',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: Couleurs.encre,
                       ),
                     ),
-                  ),
-                  if (AppConfig.useMock) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      'Mode démo (données fictives)\n'
-                      '${MockAuthRepository.demoEmail} / '
-                      '${MockAuthRepository.demoPassword}',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodySmall,
+                    const SizedBox(height: 28),
+                    if (_error != null) ...[
+                      Encadre(
+                        icone: '⚠️',
+                        texte: _error!,
+                        fond: Couleurs.dangerClair,
+                        couleur: Couleurs.danger,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    TextFormField(
+                      key: const Key('login-email'),
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      autofillHints: const [AutofillHints.email],
+                      decoration: const InputDecoration(
+                        labelText: 'E-mail',
+                        prefixIcon: Icon(Icons.mail_outline),
+                      ),
+                      validator: Validators.email,
                     ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      key: const Key('login-password'),
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      textInputAction: TextInputAction.done,
+                      autofillHints: const [AutofillHints.password],
+                      onFieldSubmitted: (_) => _submit(),
+                      decoration: InputDecoration(
+                        labelText: 'Mot de passe',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          tooltip: _obscurePassword ? 'Afficher' : 'Masquer',
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
+                        ),
+                      ),
+                      validator: Validators.required,
+                    ),
+                    const SizedBox(height: 28),
+                    SubmitButton(
+                      key: const Key('login-submit'),
+                      label: 'Se connecter',
+                      loading: _loading,
+                      onPressed: _submit,
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      key: const Key('login-inscription'),
+                      onPressed: _loading ? null : _openRegister,
+                      child: const Text('Créer un compte'),
+                    ),
+                    if (AppConfig.useMock) ...[
+                      const SizedBox(height: 24),
+                      Text(
+                        'Démo : ${MockAuthRepository.demoEmail} / '
+                        '${MockAuthRepository.demoPassword}',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Couleurs.ardoise400,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),

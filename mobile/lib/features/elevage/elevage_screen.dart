@@ -6,6 +6,7 @@ import '../../core/format.dart';
 import '../../core/theme.dart';
 import '../../core/visuels.dart';
 import '../../core/widgets.dart';
+import '../home/menu.dart';
 import 'animal_detail_screen.dart';
 import 'animal_form_screen.dart';
 import 'elevage_models.dart';
@@ -60,7 +61,9 @@ class _ElevageScreenState extends State<ElevageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: const BarreMarque(),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab-elevage',
         onPressed: () => _ouvrir(const AnimalFormScreen()),
         icon: const Icon(Icons.add),
         label: const Text('Nouvel animal'),

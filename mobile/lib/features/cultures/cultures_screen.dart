@@ -6,6 +6,7 @@ import '../../core/format.dart';
 import '../../core/theme.dart';
 import '../../core/visuels.dart';
 import '../../core/widgets.dart';
+import '../home/menu.dart';
 import 'parcelle.dart';
 import 'parcelle_form_screen.dart';
 import 'parcelle_repository.dart';
@@ -51,7 +52,9 @@ class _CulturesScreenState extends State<CulturesScreen> {
     final repository = context.read<ParcelleRepository>();
 
     return Scaffold(
+      appBar: const BarreMarque(),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab-cultures',
         onPressed: _openForm,
         icon: const Icon(Icons.add),
         label: const Text('Nouvelle parcelle'),

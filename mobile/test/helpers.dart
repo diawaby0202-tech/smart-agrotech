@@ -24,6 +24,7 @@ class FakeNotifier implements Notifier {
 Future<FakeNotifier> pumpApp(WidgetTester tester) async {
   SharedPreferences.setMockInitialValues({});
   AppTheme.policesWeb = false;
+  AppTheme.animations = false;
   final notifier = FakeNotifier();
   final services = AppServices.create(
     storage: InMemoryTokenStorage(),
@@ -81,5 +82,11 @@ Future<void> voir(
     pas,
     scrollable: find.byType(Scrollable).first,
   );
+  await tester.pumpAndSettle();
+}
+
+/// Ouvre le menu latéral avec le bouton ☰.
+Future<void> ouvrirMenu(WidgetTester tester) async {
+  await tester.tap(find.byKey(const Key('menu')));
   await tester.pumpAndSettle();
 }

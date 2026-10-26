@@ -26,10 +26,11 @@ void main() {
       findsOneWidget,
     );
 
-    // Le nouveau prénom apparaît sur l'accueil.
+    // Le nouveau prénom apparaît dans le menu.
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
-    expect(find.textContaining(', Aïssatou 👋'), findsOneWidget);
+    await ouvrirMenu(tester);
+    expect(find.text('Aïssatou Diop'), findsOneWidget);
   });
 
   test('le rôle admin est reconnu mais pas proposé à l\'inscription', () {

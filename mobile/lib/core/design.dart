@@ -28,7 +28,40 @@ class LogoMarque extends StatelessWidget {
           ),
         ],
       ),
-      child: Text('🌱', style: TextStyle(fontSize: taille * 0.5)),
+      // Reflet clair en haut à gauche, pour un rendu « icône d'application ».
+      foregroundDecoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(taille * 0.28),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.center,
+          colors: [
+            Colors.white.withValues(alpha: 0.22),
+            Colors.white.withValues(alpha: 0),
+          ],
+        ),
+      ),
+      child: Icon(Icons.eco_rounded, color: Colors.white, size: taille * 0.58),
+    );
+  }
+}
+
+/// Texte rempli du dégradé vert de la marque (comme « AgroTech » et
+/// « depuis un seul endroit » sur le site).
+class TexteDegrade extends StatelessWidget {
+  const TexteDegrade(this.texte, {super.key, this.style, this.textAlign});
+
+  final String texte;
+  final TextStyle? style;
+  final TextAlign? textAlign;
+
+  @override
+  Widget build(BuildContext context) {
+    return ShaderMask(
+      blendMode: BlendMode.srcIn,
+      shaderCallback: (bounds) => Couleurs.degradeMarque.createShader(
+        Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+      ),
+      child: Text(texte, style: style, textAlign: textAlign),
     );
   }
 }

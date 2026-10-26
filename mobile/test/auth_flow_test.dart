@@ -39,14 +39,13 @@ void main() {
     await pumpApp(tester);
 
     await loginDemo(tester);
-    expect(find.textContaining(', Awa 👋'), findsOneWidget);
+    expect(find.textContaining('depuis un seul endroit'), findsOneWidget);
 
     await ouvrirOnglet(tester, 'Marché');
     expect(find.text('Arachide décortiquée'), findsOneWidget);
 
-    await ouvrirOnglet(tester, 'Accueil');
-    await tester.tap(find.byKey(const Key('logout')));
-    await tester.pumpAndSettle();
+    await ouvrirMenu(tester);
+    await appuyer(tester, const Key('menu-deconnexion'));
     expect(find.text('Se connecter'), findsOneWidget);
   });
 
@@ -80,6 +79,6 @@ void main() {
     );
     await tester.tap(find.byKey(const Key('login-submit')));
     await tester.pumpAndSettle();
-    expect(find.textContaining(', Moussa 👋'), findsOneWidget);
+    expect(find.textContaining('depuis un seul endroit'), findsOneWidget);
   });
 }
