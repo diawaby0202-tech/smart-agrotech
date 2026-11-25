@@ -1,6 +1,3 @@
-"""
-Django settings for config project.
-"""
 
 from pathlib import Path
 from datetime import timedelta
@@ -13,7 +10,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env_config('SECRET_KEY')
 
 DEBUG = env_config('DEBUG', default=True, cast=bool)
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok-free.dev', '.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.dev', 'https://*.ngrok-free.app']
 
 
 # Application definition

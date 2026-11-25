@@ -22,7 +22,7 @@ function messageErreur(error) {
   if (data && typeof data === 'object') {
     return Object.values(data).flat().join(' · ')
   }
-  return 'Action impossible.'
+  return 'Something went wrong – let me know if it keeps happening.'
 }
 
 export default function GestionUtilisateurs() {
@@ -76,7 +76,7 @@ export default function GestionUtilisateurs() {
     setSucces('')
     try {
       await action(id)
-      setSucces(`Action « ${libelle} » effectuée.`)
+      setSucces(`« ${libelle} » effectué – les choses avancent.`)
       await charger()
     } catch (error) {
       setErreur(messageErreur(error))
@@ -128,7 +128,7 @@ export default function GestionUtilisateurs() {
       {chargement ? (
         <div className="page-chargement"><Spinner taille={28} /></div>
       ) : utilisateurs.length === 0 ? (
-        <p className="vide">Aucun utilisateur ne correspond à ces critères.</p>
+        <p className="vide">Pas d'utilisateur qui correspond pour l'instant – c'est le moment idéal pour vérifier les filtres ou ajouter de nouveaux comptes.</p>
       ) : (
         <TableauUtilisateurs
           utilisateurs={utilisateurs}

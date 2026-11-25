@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import imgMil from '../assets/img/culture-mil.jpg'
-import imgArachide from '../assets/img/culture-arachide.jpg'
-import imgMais from '../assets/img/culture-mais.jpg'
-import imgCultures from '../assets/img/cultures.jpg'
+import imgMil from '../assets/img/culture-mil.jpeg'
+import imgArachide from '../assets/img/culture-arachide.jpeg'
+import imgMais from '../assets/img/culture-mais.jpeg'
+import imgCultures from '../assets/img/cultures.jpeg'
 import BandeauApercu from '../components/common/BandeauApercu'
 import Message from '../components/common/Message'
 import Spinner from '../components/common/Spinner'
@@ -59,19 +59,20 @@ function rappelRecolte(parcelle) {
 }
 
 const CHAMPS = [
-  { nom: 'nom', label: 'Nom de la parcelle', requis: true },
-  { nom: 'culture', label: 'Culture (mil, arachide…)', requis: true },
-  { nom: 'superficie', label: 'Superficie (hectares)', type: 'number', requis: true, min: 0 },
-  { nom: 'localisation', label: 'Localisation' },
-  { nom: 'date_semis', label: 'Date de semis', type: 'date' },
-  { nom: 'date_recolte_prevue', label: 'Récolte prévue', type: 'date' },
+  { nom: 'nom', label: 'Nom de la parcelle', requis: true, aide: 'ex. : Parcelle A, Champ Nord, Terrain N°3... ce qui vous permet de la retrouver' },
+  { nom: 'culture', label: 'Culture', requis: true, aide: 'ex. : mil, arachide, maïs, légume... ce que vous plantez cette saison' },
+  { nom: 'superficie', label: 'Superficie (hectares)', type: 'number', requis: true, min: 0, aide: 'au mètre près – ou votre estimation pour la saison' },
+  { nom: 'localisation', label: 'Localisation', aide: 'ex. : village, zone, montagne... aide à situer sur la carte' },
+  { nom: 'date_semis', label: 'Date de semis', type: 'date', aide: 'JJ/MM/AAAA – ou la semaine approximative de plantation' },
+  { nom: 'date_recolte_prevue', label: 'Récolte prévue', type: 'date', aide: 'Date estimée – peut être ajustée quand vous savez davantage' },
   {
     nom: 'statut',
     label: 'Statut',
     type: 'select',
     options: STATUTS.map((s) => ({ valeur: s.valeur, libelle: s.libelle })),
+    aide: 'Choisissez l\'état actuel : préparation → semée → croissance → récoltée',
   },
-  { nom: 'notes', label: 'Notes', type: 'textarea', pleineLargeur: true },
+  { nom: 'notes', label: 'Notes', type: 'textarea', pleineLargeur: true, aide: 'Qu\'est-ce qui semble spécial ? défis observés, astuces, météo notée...' },
 ]
 
 const VIDE = {
@@ -200,8 +201,8 @@ export default function Cultures() {
         <Spinner taille={32} />
       ) : affichees.length === 0 ? (
         <div className="etat-vide">
-          <strong>Aucune parcelle pour le moment</strong>
-          <p>Cliquez sur « + Nouvelle parcelle » pour ajouter votre première culture.</p>
+          <strong>Aucune parcelle pour l'instant</strong>
+          <p>C'est le moment de commencer : ajoutez votre première parcelle, la date de semis et ce que vous plantez. Tout a débuté ainsi – une étape à la fois.</p>
         </div>
       ) : (
         <div className="grille-parcelles">

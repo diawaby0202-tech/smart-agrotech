@@ -8,6 +8,30 @@ function salutation() {
   return 'Bonsoir'
 }
 
+function texteBienvenue() {
+  const heure = new Date().getHours()
+  if (heure < 12) return 'Le soleil se lève, c\'est l\'heure de travailler !'
+  if (heure < 18) return 'L\'après-midi, parfait pour vérifier vos cultures !'
+  return 'Bonsoir, temps de faire le point sur la journée !'
+}
+
+// Liste de messages d'encouragement pour rendre l'application plus humaine
+const MESSAGES_ENCOURAGEMENT = [
+  'Chaque petit pas compte : vous êtes sur la bonne voie ! 🌱',
+  'Noubliez pas : la météo peut changer, restez vigilant ! ⛅',
+  'Vos cultures vous remercient pour votre attention quotidienne 🌾',
+  'Prenez soin de vos animaux, ils comptent sur vous 🐄',
+  'Le marché est plein d\'opportunités, allez-y ! 🛒',
+  'Chaque jour est une nouvelle chance de réussir vos récoltes.',
+  'Votre engagement fait la différence : continuez ainsi !',
+  'Petit à petit, l\'oiseau fait son nid : restez patient et persévérant.',
+]
+function messageEncouragement() {
+  // Message aléatoire pour varier l'expérience utilisateur
+  const indice = Math.floor(Math.random() * MESSAGES_ENCOURAGEMENT.length)
+  return MESSAGES_ENCOURAGEMENT[indice]
+}
+
 export default function TableauDeBord() {
   const { utilisateur, estAdmin } = useAuth()
 
@@ -39,7 +63,8 @@ export default function TableauDeBord() {
           {libelleRole}
         </span>
         <h1>{salutation()}{prenom ? `, ${prenom}` : ''} 👋</h1>
-        <p>Voici un aperçu de votre espace Smart AgroTech.</p>
+<p className="encouragement">{messageEncouragement()}</p>
+        <p>Chaque jour est une nouvelle chance de prendre soin de ce qui compte. Voici un aperçu de votre espace Smart AgroTech.</p>
       </div>
 
       {estAdmin && (

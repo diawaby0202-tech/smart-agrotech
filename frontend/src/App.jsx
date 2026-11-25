@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+﻿import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { RouteProtegee, RoutePublique } from './routes/RouteProtegee'
 import Layout from './components/layout/Layout'
@@ -22,7 +22,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>
-            {/* Accueil public ; modules réservés aux utilisateurs connectés */}
+            {/* Accueil public ; modules rÃ©servÃ©s aux utilisateurs connectÃ©s */}
             <Route index element={<Accueil />} />
             <Route path="/cultures" element={<RouteProtegee><Cultures /></RouteProtegee>} />
             <Route path="/elevage" element={<RouteProtegee><Elevage /></RouteProtegee>} />
@@ -100,3 +100,4 @@ export default function App() {
     </AuthProvider>
   )
 }
+

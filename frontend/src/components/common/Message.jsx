@@ -6,3 +6,11 @@ export default function Message({ type = 'info', children, className = '' }) {
     </div>
   )
 }
+
+/** Messages par défaut selon le type – version humaine */
+const MESSAGES_PAR_DEFAUT = {
+  info: 'Information',
+  succes: 'Bravo !',
+  erreur: 'Houps, quelque chose s\'est passé.',
+  warning: 'Attention',
+}

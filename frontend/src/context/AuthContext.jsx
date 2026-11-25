@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+﻿import { createContext, useContext, useEffect, useState } from 'react'
 import { clearTokens, getAccessToken } from '../api/axiosClient'
 import {
   connexion as connexionApi,
@@ -19,7 +19,7 @@ export function AuthProvider({ children }) {
   const [utilisateur, setUtilisateur] = useState(null)
   const [chargement, setChargement] = useState(true)
 
-  // Au démarrage : si un token est présent, on récupère le profil associé.
+  // Au dÃ©marrage : si un token est prÃ©sent, on rÃ©cupÃ¨re le profil associÃ©.
   useEffect(() => {
     let actif = true
 
@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
         const profil = await obtenirProfil()
         if (actif) setUtilisateur(profil)
       } catch {
-        // Token invalide/expiré et refresh impossible : on nettoie la session.
+        // Token invalide/expirÃ© et refresh impossible : on nettoie la session.
         clearTokens()
         if (actif) setUtilisateur(null)
       } finally {
@@ -93,7 +93,8 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   const contexte = useContext(AuthContext)
   if (!contexte) {
-    throw new Error('useAuth doit être utilisé à l’intérieur d’un <AuthProvider>')
+    throw new Error('useAuth doit Ãªtre utilisÃ© Ã  lâ€™intÃ©rieur dâ€™un <AuthProvider>')
   }
   return contexte
 }
+

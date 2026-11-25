@@ -1957,3 +1957,193 @@ img {
   background: var(--info-clair);
 }
 
+
+/* ==========================================================================
+   Design vivant — anti-template (sans impact sur les fonctionnalités)
+   Formes organiques, texture, badges remplaçant les émojis, asymétrie douce.
+   ========================================================================== */
+
+/* Palette de fonds plus nuancée (moins "pure" qu'un blanc uni) */
+:root {
+  --fond-papier: #fbfdfa;
+  --fond-verveine: #f4fbf2;
+  --grain-url: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+body {
+  background: var(--fond-papier);
+  background-image: var(--grain-url);
+}
+
+/* --- Formes organiques (blobs) pour casser la rigidité géométrique --- */
+
+.blob {
+  position: absolute;
+  z-index: 0;
+  filter: blur(55px);
+  opacity: 0.45;
+  border-radius: 50%;
+  animation: flotter 8s ease-in-out infinite;
+}
+
+.blob--grand {
+  width: 420px;
+  height: 420px;
+  background: var(--vert-100);
+  top: -90px;
+  right: -110px;
+  animation-delay: 0s;
+}
+
+.blob--moyen {
+  width: 300px;
+  height: 300px;
+  background: var(--or-100);
+  bottom: -70px;
+  left: -50px;
+  animation-delay: -2s;
+}
+
+.blob--petit {
+  width: 180px;
+  height: 180px;
+  background: #bae6fd;
+  top: 20%;
+  left: 40%;
+  animation-delay: -4s;
+  opacity: 0.35;
+}
+
+.blob-vague {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.5;
+  mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
+}
+
+.blob-vague::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 60px;
+  background: var(--fond-verveine);
+  border-radius: 50% 50% 0 0 / 40px 40px 0 0;
+}
+
+/* --- Badges-lettres pour remplacer les émojis génériques --- */
+
+.badge-lettre {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--ardoise-700);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  flex-shrink: 0;
+}
+
+.badge-lettre--cultures { background: #0284c7; }
+.badge-lettre--elevage   { background: #b45309; }
+.badge-lettre--meteo     { background: #15803d; }
+.badge-lettre--marche    { background: #d97706; }
+.badge-lettre--alertes   { background: #7c3aed; }
+.badge-lettre--profil    { background: #4f46e5; }
+.badge-lettre--vaccination { background: #7c3aed; }
+.badge-lettre--culture   { background: #0284c7; }
+.badge-lettre--systeme   { background: #4f46e5; }
+
+.badge-petite {
+  width: 30px;
+  height: 30px;
+  font-size: 0.95rem;
+  border-radius: 8px;
+}
+
+/* --- Caractère "vécu" des cartes : bordure irrégulière légère et ombre douce --- */
+
+.carte-vivante {
+  position: relative;
+  border-radius: var(--rayon-lg);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.carte-vivante::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--vert-500), var(--or-500), #7c3aed) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0) padding-box;
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+
+.carte-vivante:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--ombre-lg);
+}
+
+.carte-vivante:hover::before {
+  opacity: 0.85;
+}
+
+/* --- Asymétrie douce des grilles de cartes --- */
+
+.grille-vivante {
+  display: grid;
+  gap: 20px;
+}
+
+.grille-vivante--trois {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grille-vivante--trois > *:nth-child(3n+1) {
+  grid-row: span 2;
+}
+
+.grille-vivante--quatre {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.grille-vivante--quatre > *:nth-child(4n+2) {
+  align-self: start;
+}
+
+.grille-vivante--quatre > *:nth-child(4n+4) {
+  align-self: end;
+}
+
+/* --- Micro-animations décalées pour éviter l'effet "tout en même temps" --- */
+
+.apparait-decale-1 { animation: monter 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.05s; opacity: 0; animation-fill-mode: forwards; }
+.apparait-decale-2 { animation: monter 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.18s; opacity: 0; animation-fill-mode: forwards; }
+.apparait-decale-3 { animation: monter 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.30s; opacity: 0; animation-fill-mode: forwards; }
+.apparait-decale-4 { animation: monter 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.42s; opacity: 0; animation-fill-mode: forwards; }
+
+@media (max-width: 760px) {
+  .grille-vivante--trois,
+  .grille-vivante--quatre {
+    grid-template-columns: 1fr;
+  }
+  .grille-vivante--trois > *:nth-child(3n+1),
+  .grille-vivante--quatre > *:nth-child(4n+2),
+  .grille-vivante--quatre > *:nth-child(4n+4) {
+    grid-row: auto;
+    align-self: auto;
+  }
+}
+

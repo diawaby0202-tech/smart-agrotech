@@ -1,16 +1,16 @@
-import { Navigate, useLocation } from 'react-router-dom'
+﻿import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 /**
- * Route réservée aux visiteurs non connectés (connexion, inscription).
- * Redirige l'utilisateur déjà authentifié vers son tableau de bord.
+ * Route rÃ©servÃ©e aux visiteurs non connectÃ©s (connexion, inscription).
+ * Redirige l'utilisateur dÃ©jÃ  authentifiÃ© vers son tableau de bord.
  */
 export function RoutePublique({ children }) {
   const { estConnecte, chargement } = useAuth()
   const location = useLocation()
 
   if (chargement) {
-    return <div className="page-chargement">Chargement…</div>
+    return <div className="page-chargement">Chargementâ€¦</div>
   }
 
   if (estConnecte) {
@@ -22,15 +22,15 @@ export function RoutePublique({ children }) {
 }
 
 /**
- * Route protégée : exige une session valide.
- * `roles` (optionnel) limite l'accès à certains rôles (ex. ['admin']).
+ * Route protÃ©gÃ©e : exige une session valide.
+ * `roles` (optionnel) limite l'accÃ¨s Ã  certains rÃ´les (ex. ['admin']).
  */
 export function RouteProtegee({ children, roles = [] }) {
   const { estConnecte, chargement, utilisateur } = useAuth()
   const location = useLocation()
 
   if (chargement) {
-    return <div className="page-chargement">Chargement…</div>
+    return <div className="page-chargement">Chargementâ€¦</div>
   }
 
   if (!estConnecte) {
@@ -43,3 +43,4 @@ export function RouteProtegee({ children, roles = [] }) {
 
   return children
 }
+

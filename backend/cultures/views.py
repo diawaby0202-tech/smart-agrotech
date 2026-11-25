@@ -20,6 +20,10 @@ class ParcelleViewSet(viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
+        # Seuls les producteurs et admins peuvent créer des parcelles
+        if self.request.user.role not in ['producteur', 'admin']:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Seuls les producteurs peuvent créer des parcelles")
         serializer.save(proprietaire=self.request.user)
 
     @action(detail=False, methods=['get'])

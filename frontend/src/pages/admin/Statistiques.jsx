@@ -22,7 +22,7 @@ export default function Statistiques() {
         const data = await obtenirStatistiques()
         if (actif) setStats(data)
       } catch {
-        if (actif) setErreur('Impossible de charger les statistiques.')
+        if (actif) setErreur('Impossible de charger les stats pour l instant - reessayez dans un instant.')
       } finally {
         if (actif) setChargement(false)
       }

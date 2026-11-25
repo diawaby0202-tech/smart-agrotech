@@ -11,7 +11,7 @@ function messageErreur(error) {
       .map(([champ, messages]) => `${champ} : ${String(messages).flat().join(', ')}`)
       .join(' · ')
   }
-  return 'Mise à jour impossible. Veuillez réessayer.'
+  return 'Impossible de mettre à jour votre profil en ce moment – réessayez dans un instant.'
 }
 
 export default function Profil() {
@@ -99,15 +99,15 @@ export default function Profil() {
           <form onSubmit={handleSubmit} className="formulaire">
             <div className="champ">
               <label htmlFor="profil-prenom">Prénom</label>
-              <input id="profil-prenom" type="text" value={formulaire.prenom} onChange={handleChange('prenom')} required />
+              <input id="profil-prenom" type="text" value={formulaire.prenom} onChange={handleChange('prenom')} placeholder="Votre prénom" required />
             </div>
             <div className="champ">
               <label htmlFor="profil-nom">Nom</label>
-              <input id="profil-nom" type="text" value={formulaire.nom} onChange={handleChange('nom')} required />
+              <input id="profil-nom" type="text" value={formulaire.nom} onChange={handleChange('nom')} placeholder="Votre nom de famille" required />
             </div>
             <div className="champ">
               <label htmlFor="profil-telephone">Téléphone</label>
-              <input id="profil-telephone" type="tel" value={formulaire.telephone} onChange={handleChange('telephone')} placeholder="+221 …" />
+              <input id="profil-telephone" type="tel" value={formulaire.telephone} onChange={handleChange('telephone')} placeholder="+221 77 123 4567 (optionnel)" />
             </div>
             <button type="submit" className="btn btn-primaire" disabled={envoi}>
               {envoi ? <Spinner /> : 'Enregistrer'}

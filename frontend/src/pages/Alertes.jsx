@@ -240,8 +240,8 @@ export default function Alertes() {
         <Spinner taille={32} />
       ) : liste.length === 0 ? (
         <div className="etat-vide">
-          <strong>Aucune alerte pour le moment</strong>
-          <p>Cliquez sur « Actualiser mes alertes » pour vérifier la météo, vos cultures et vos soins.</p>
+          <strong>Pas d'alerte pour l'instant</strong>
+          <p>C'est une bonne nouvelle : pas de risques majeurs à l'horizon. Cliquez sur « Actualiser mes alertes » pour vérifier la météo, vos cultures et vos soins, ou profitez-en pour prendre un repos bien mérité.</p>
         </div>
       ) : (
         <div className="liste-alertes">

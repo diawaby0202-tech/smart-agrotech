@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import imgMil from '../assets/img/culture-mil.jpg'
-import imgTomates from '../assets/img/marche-tomates.jpg'
-import imgBoeuf from '../assets/img/elevage-bovin.jpg'
-import imgOignons from '../assets/img/marche-oignons.jpg'
+import imgMil from '../assets/img/culture-mil.jpeg'
+import imgTomates from '../assets/img/marche-tomates.jpeg'
+import imgBoeuf from '../assets/img/elevage-bovin.jpeg'
+import imgOignons from '../assets/img/marche-oignons.jpeg'
 import imgMarche from '../assets/img/marche.jpg'
 import '../styles-modules.css'
 import BandeauApercu from '../components/common/BandeauApercu'
@@ -26,16 +26,17 @@ const parCategorie = Object.fromEntries(CATEGORIES.map((c) => [c.valeur, c]))
 const formatPrix = new Intl.NumberFormat('fr-FR')
 
 const CHAMPS = [
-  { nom: 'titre', label: "Titre de l'annonce", requis: true, pleineLargeur: true },
+  { nom: 'titre', label: 'Titre de l\'annonce', requis: true, pleineLargeur: true, aide: 'exemple : 50 kg de mil, 3 tetes de boeufs... ce qui vous interesse d\'acheter ou de vendre' },
   {
     nom: 'categorie', label: 'Catégorie', type: 'select',
     options: CATEGORIES.map((c) => ({ valeur: c.valeur, libelle: c.libelle })),
+    aide: 'Choisissez le type de produit : cereales, legumes, betail, intrants...',
   },
-  { nom: 'prix', label: 'Prix (FCFA)', type: 'number', min: 0, requis: true },
-  { nom: 'quantite', label: 'Quantité (ex. 50 kg, 3 têtes)' },
-  { nom: 'zone', label: 'Zone / ville' },
-  { nom: 'image', label: 'Photo (5 Mo maximum)', type: 'file', pleineLargeur: true },
-  { nom: 'description', label: 'Description', type: 'textarea', pleineLargeur: true },
+  { nom: 'prix', label: 'Prix (FCFA)', type: 'number', min: 0, requis: true, aide: 'prix au detail - leavez 0 si vous demandez un devis' },
+  { nom: 'quantite', label: 'Quantite (ex. 50 kg, 3 tetes)', aide: 'la quantite disponible - optionnel si vous discutez du prix a l unite' },
+  { nom: 'zone', label: 'Zone / ville', aide: 'ex. : Dakar, Thiès, Kaolack... localisation pour les acheteurs proches' },
+  { nom: 'image', label: 'Photo (5 Mo maximum)', type: 'file', pleineLargeur: true, aide: 'une photo claire aide beaucoup - jpg ou png de preference' },
+  { nom: 'description', label: 'Description', type: 'textarea', pleineLargeur: true, aide: 'décrivez l\'etat, la qualité, ce qui le rend spécial... les acheteurs apprécient les détails' },
 ]
 
 export default function Marche() {
@@ -190,8 +191,8 @@ export default function Marche() {
         <Spinner taille={32} />
       ) : liste.length === 0 ? (
         <div className="etat-vide">
-          <strong>Aucune annonce trouvée</strong>
-          <p>Modifiez votre recherche ou vos filtres{peutVendre ? ', ou publiez la première annonce.' : '.'}</p>
+          <strong>Aucune annonce pour l'instant</strong>
+          <p>Pas de souci : les bonnes affaires mettent un peu de temps à apparaître. {peutVendre ? 'Vous pouvez publier votre première annonce' : 'Recherchez avec des filtres plus larges ou revenez plus tard.'}</p>
         </div>
       ) : (
         <div className="grille-annonces">

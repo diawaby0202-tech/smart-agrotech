@@ -1,45 +1,55 @@
 import { Link } from 'react-router-dom'
 import heroImg from '../assets/img/hero.jpg'
-import culturesImg from '../assets/img/cultures.jpg'
-import elevageImg from '../assets/img/elevage.jpg'
+import culturesImg from '../assets/img/cultures.jpeg'
+import elevageImg from '../assets/img/elevage.jpeg'
 import meteoImg from '../assets/img/meteo.jpg'
 import marcheImg from '../assets/img/marche.jpg'
 import producteurImg from '../assets/img/producteur.jpg'
 import acheteurImg from '../assets/img/acheteur.jpg'
 import structuresImg from '../assets/img/structures.jpg'
+import aeImg from '../assets/img/ae.jpeg'
+import eImg from '../assets/img/e.jpeg'
+import alImg from '../assets/img/al.jpeg'
+import pImg from '../assets/img/p.jpeg'
+import mImg from '../assets/img/m.jpeg'
+import aImg from '../assets/img/a.jpeg'
+import sImg from '../assets/img/s.jpeg'
+
+
+
+
+
+
 
 const modules = [
   {
-    icone: '🌾',
-    titre: 'Cultures & récoltes',
-    texte:
-      'Enregistrez vos parcelles, suivez leur évolution (semis, croissance, récolte) et anticipez vos récoltes.',
+    image: pImg,
+    titre: 'Mes parcelles',
+    texte: 'Parce que chaque graine compte, notez ce que vous plantez, suivez sa croissance et sentez la satisfaction de voir arriver la récolte. C\'est votre terrain, vous savez ce qui fonctionne.',
     lien: '/cultures',
-    image: culturesImg,
+    
   },
-  {
-    icone: '🐄',
+ {
+    image: eImg,
     titre: 'Élevage',
-    texte:
-      'Tenez à jour la fiche de chaque animal, consignez les soins et recevez des rappels de vaccination.',
+    texte: 'Vos animaux comptent sur vous...',
     lien: '/elevage',
-    image: elevageImg,
   },
   {
-    icone: '⛅',
+    image: alImg,
     titre: 'Alertes météo',
     texte:
-      'Consultez les prévisions de votre zone et soyez alerté des risques climatiques en amont.',
+      'La météo ne pardonne pas, mais elle nous prévient. Restez informé des risques à venir pour protéger vos cultures et votre bétail – c\'est ainsi que l\'on travaille main dans la main avec la nature.',
     lien: '/alertes',
-    image: meteoImg,
+    
   },
   {
-    icone: '🛒',
+    image: mImg,
     titre: 'Marché agricole',
     texte:
-      'Publiez vos annonces, trouvez des produits locaux et contactez directement les vendeurs.',
+      'Vos produits méritent d\'être trouvés. Mettez vos annonces en ligne et connectez‑vous directement avec ceux qui cherchent ce que vous produisez. Pas d\'intermédiaire, juste du vrai échange.',
     lien: '/marche',
-    image: marcheImg,
+   
   },
 ]
 
@@ -52,24 +62,24 @@ const statistiques = [
 
 const publics = [
   {
-    icone: '🧑‍🌾',
+    image: aeImg,  // ← Remplacé par ae.jpeg
     titre: 'Agriculteurs & éleveurs',
-    texte: 'Suivi des parcelles et du bétail, rappels d’intervention et publication d’annonces.',
-    image: producteurImg,
+    texte: 'Vous faites pousser la vie. On vous aide à suivre ce qui pousse, à prendre soin du bétail et à partager vos surplus – avec le respect que votre travail mérite.',
   },
   {
-    icone: '🛒',
+    image: aImg,
     titre: 'Acheteurs',
-    texte: 'Recherche de produits locaux et mise en relation directe avec les producteurs.',
-    image: acheteurImg,
+    texte: 'Trouver des produits locaux qui racontent une histoire, entrer en contact directement avec ceux qui les ont cultivés – c\'est ainsi que le marché devient humain, pas seulement transactionnel.',
+    
   },
   {
-    icone: '🏛️',
+    image: sImg,
     titre: 'Structures d’appui',
-    texte: 'ONG et services techniques : supervision et suivi des activités de leur zone.',
-    image: structuresImg,
+    texte: 'ONG et services techniques : vous n\'êtes pas seul sur le terrain. On est là pour superviser, accompagner et s\'assurer que les outils dont vous avez besoin sont là quand vous en avez besoin.',
+    
   },
 ]
+
 
 export default function Accueil() {
   return (
@@ -85,6 +95,10 @@ export default function Accueil() {
           <p className="accueil-sous-titre">
             Smart AgroTech Sénégal aide les agriculteurs, éleveurs et acheteurs à mieux suivre
             leurs activités, anticiper les risques climatiques et accéder à un marché en ligne local.
+          </p>
+          <p className="accueil-accueillant">
+            Pas de formule magique, juste des outils qui évoluent au rythme de votre terrain. On y est
+            quand vous décidez de commencer.
           </p>
           <div className="accueil-actions">
             <Link to="/inscription" className="btn btn-primaire btn-grand">
@@ -131,7 +145,7 @@ export default function Accueil() {
             <Link to={module.lien} key={module.titre} className="carte-module">
               <div className="carte-module-media">
                 <img src={module.image} alt={module.titre} loading="lazy" />
-                <span className="carte-module-icone" aria-hidden="true">{module.icone}</span>
+                {/* L'icône emoji enlevée : l'image réelle du terrain suffit */}
               </div>
               <div className="carte-module-corps">
                 <h3>{module.titre}</h3>
@@ -156,7 +170,7 @@ export default function Accueil() {
             <div className="carte-public" key={public_.titre}>
               <div className="carte-public-media">
                 <img src={public_.image} alt={public_.titre} loading="lazy" />
-                <span className="carte-public-icone" aria-hidden="true">{public_.icone}</span>
+                {/* Icône enlevée : l'image parle d'elle-même */}
               </div>
               <div className="carte-public-corps">
                 <h3>{public_.titre}</h3>
@@ -169,10 +183,10 @@ export default function Accueil() {
 
       <section className="accueil-cta">
         <div className="accueil-cta-bloc">
-          <h2>Prêt à moderniser votre exploitation ?</h2>
+          <h2>Envie d'aller plus loin ?</h2>
           <p>
-            Rejoignez Smart AgroTech Sénégal et accédez à tous vos outils de suivi agricole,
-            où que vous soyez, depuis votre téléphone ou votre ordinateur.
+            Smart AgroTech Sénégal est là quand vous serez prêt – pas de pression, des outils
+            qui grandissent avec votre exploitation, à votre rythme.
           </p>
           <div className="accueil-cta-actions">
             <Link to="/inscription" className="btn btn-or btn-grand">

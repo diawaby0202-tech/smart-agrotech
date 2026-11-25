@@ -3,17 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Message from '../components/common/Message'
 import Spinner from '../components/common/Spinner'
-
-function messageErreur(error) {
-  const data = error?.response?.data
-  if (!data) return 'Connexion impossible. Vérifiez votre connexion au serveur.'
-  if (data.detail) return data.detail
-  if (typeof data === 'object') {
-    const premier = Object.values(data).flat().find(Boolean)
-    if (premier) return String(premier)
-  }
-  return 'Identifiants invalides.'
-}
+import aeImg from '../assets/img/ae.jpeg'
 
 export default function Connexion() {
   const { connexion } = useAuth()
@@ -47,43 +37,21 @@ export default function Connexion() {
 
   return (
     <div className="page-auth">
-      <div className="auth-cloison">
-        {/* Panneau marque (caché sur mobile) */}
-        <aside className="auth-panneau">
-          <Link to="/" className="auth-panneau-marque">
-            <span className="auth-panneau-logo" aria-hidden="true">🌱</span>
-            <span>Smart AgroTech</span>
-          </Link>
-
-          <div className="auth-panneau-corps">
-            <h2 className="auth-panneau-titre">
-              L'agriculture sénégalaise, <span>plus intelligente</span>.
-            </h2>
-            <p className="auth-panneau-texte">
-              Suivez vos cultures, gérez votre élevage, anticipez la météo et
-              vendez vos produits — depuis une seule plateforme.
-            </p>
-
-            <ul className="auth-panneau-liste">
-              <li><span aria-hidden="true">🌾</span> Suivi des parcelles et des récoltes</li>
-              <li><span aria-hidden="true">🐄</span> Gestion sanitaire du bétail</li>
-              <li><span aria-hidden="true">⛅</span> Alertes météo de votre zone</li>
-              <li><span aria-hidden="true">🛒</span> Marché agricole en ligne</li>
-            </ul>
-          </div>
-
-          <p className="auth-panneau-pied">
-            Fait pour les agriculteurs et éleveurs du Sénégal.
-          </p>
-        </aside>
+      <div className="auth-container">
+        {/* Image de gauche avec hero.jpg */}
+        <div className="auth-image-left">
+          <img
+            src={aeImg}
+            alt="Bannière d'accueil Smart AgroTech"
+            loading="eager"
+          />
+        </div>
 
         {/* Formulaire */}
         <div className="auth-formulaire-zone">
           <div className="auth-carte">
             <div className="auth-entete">
-              <span className="auth-logo" aria-hidden="true">🌱</span>
               <h1>Connexion</h1>
-              <p>Accédez à votre espace Smart AgroTech.</p>
             </div>
 
             {location.state?.message && <Message type="succes">{location.state.message}</Message>}

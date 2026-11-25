@@ -6,8 +6,8 @@ function enListe(data) {
   return data?.results ?? []
 }
 
-/** Transforme une erreur de l'API en message lisible en français. */
-export function messageErreur(error, defaut = 'Une erreur est survenue. Réessayez.') {
+/** Transforme une erreur de l'API en message lisible en français – version humaine. */
+export function messageErreur(error, defaut = 'Houps, quelque chose s\'est coincé. Réessayez dans un instant.') {
   const data = error?.response?.data
   if (!error?.response) return 'Serveur injoignable. Vérifiez que le backend est démarré.'
   if (data?.detail) return String(data.detail)

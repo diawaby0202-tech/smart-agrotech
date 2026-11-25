@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import imgBovin from '../assets/img/elevage-bovin.jpg'
-import imgCaprin from '../assets/img/elevage-caprin.jpg'
-import imgOvin from '../assets/img/elevage-ovin.jpg'
-import imgElevage from '../assets/img/elevage.jpg'
+import imgBovin from '../assets/img/elevage-bovin.jpeg'
+import imgCaprin from '../assets/img/elevage-caprin.jpeg'
+import imgOvin from '../assets/img/elevage-ovin.jpeg'
+import imgElevage from '../assets/img/elevage.jpeg'
 import BandeauApercu from '../components/common/BandeauApercu'
 import Message from '../components/common/Message'
 import Spinner from '../components/common/Spinner'
@@ -53,21 +53,22 @@ function ageAnimal(naissance) {
 }
 
 const CHAMPS_ANIMAL = [
-  { nom: 'espece', label: 'Espèce (bovin, caprin, ovin…)', requis: true },
-  { nom: 'race', label: 'Race' },
-  { nom: 'identifiant', label: 'Identifiant / nom du lot' },
-  { nom: 'effectif', label: 'Effectif (1 = animal seul)', type: 'number', min: 1, requis: true },
-  { nom: 'date_naissance', label: 'Date de naissance', type: 'date' },
-  { nom: 'notes', label: 'Notes', type: 'textarea', pleineLargeur: true },
+  { nom: 'espece', label: 'Espèce', requis: true, aide: 'ex. : vache, chèvre, mouton, poules... c\'est votre élevage' },
+  { nom: 'race', label: 'Race', aide: 'optionnel – laissez vide si vous connaissez pas le terme exact, on notera ce que vous observez' },
+  { nom: 'identifiant', label: 'Identifiant / nom du lot', aide: 'ex. : Lot A, Béatrice, ou votre propre nom pour l\'animal' },
+  { nom: 'effectif', label: 'Effectif', type: 'number', min: 1, requis: true, aide: '1 = un animal seul, ou le nombre t\'êtes dans le lot' },
+  { nom: 'date_naissance', label: 'Date de naissance', type: 'date', aide: 'JJ/MM/AAAA – ou la date approximative si vous ne la connaissez pas précise' },
+  { nom: 'notes', label: 'Notes', type: 'textarea', pleineLargeur: true, aide: 'Qu\'est-ce qui semble important à retenir ? comportement, particularité,observations...' },
 ]
 const CHAMPS_SUIVI = [
   {
     nom: 'type', label: 'Type de soin', type: 'select',
     options: TYPES_SUIVI,
+    aide: 'ex. : vaccination, traitement, visite vétérinaire',
   },
-  { nom: 'date', label: 'Date du soin', type: 'date', requis: true },
-  { nom: 'prochaine_echeance', label: 'Prochaine échéance', type: 'date' },
-  { nom: 'description', label: 'Description (produit, dose…)', type: 'textarea', pleineLargeur: true },
+  { nom: 'date', label: 'Date du soin', type: 'date', requis: true, aide: 'JJ/MM/AAAA – aujourd\'hui ou la date du dernier soin' },
+  { nom: 'prochaine_echeance', label: 'Prochaine échéance', type: 'date', aide: 'Quand prévoir le prochain ? (laisser vide si inconnu)' },
+  { nom: 'description', label: 'Description', type: 'textarea', pleineLargeur: true, aide: 'Produit utilisé, dose, observation notée sur l\'animal...' },
 ]
 
 export default function Elevage() {
@@ -220,8 +221,8 @@ export default function Elevage() {
         <Spinner taille={32} />
       ) : affiches.length === 0 ? (
         <div className="etat-vide">
-          <strong>Aucun animal enregistré</strong>
-          <p>Cliquez sur « + Ajouter un animal » pour créer une fiche (animal seul ou lot).</p>
+          <strong>Pas d'animal dans l'élevage pour l'instant</strong>
+          <p>Pas de souci : chaque début l'est. Cliquez sur « + Ajouter un animal » pour créer votre première fiche, ou profitez-en pour observer votre troupeau et noter ce qui vous semble important.</p>
         </div>
       ) : (
         <div className="grille-parcelles">
