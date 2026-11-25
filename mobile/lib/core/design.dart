@@ -1,11 +1,15 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import 'theme.dart';
 
-/// Éléments visuels repris du site web : logo, bandeau de module, étiquettes,
-/// encadrés et cartes avec photo.
+/// Éléments visuels communs : logo, en-tête de module, étiquettes, encadrés
+/// et cartes avec photo. Couleurs unies et icônes plutôt que dégradés et
+/// emojis.
 
-/// Carré vert dégradé avec la pousse 🌱, logo du site web.
+/// Logo de l'app : une feuille sur un carré vert uni.
 class LogoMarque extends StatelessWidget {
   const LogoMarque({super.key, this.taille = 64});
 
@@ -18,99 +22,15 @@ class LogoMarque extends StatelessWidget {
       height: taille,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        gradient: Couleurs.degradeMarque,
-        borderRadius: BorderRadius.circular(taille * 0.28),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x4016A34A),
-            blurRadius: 18,
-            offset: Offset(0, 6),
-          ),
-        ],
+        color: Couleurs.vert700,
+        borderRadius: BorderRadius.circular(taille * 0.26),
       ),
-      // Reflet clair en haut à gauche, pour un rendu « icône d'application ».
-      foregroundDecoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(taille * 0.28),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.center,
-          colors: [
-            Colors.white.withValues(alpha: 0.22),
-            Colors.white.withValues(alpha: 0),
-          ],
-        ),
-      ),
-      child: Icon(Icons.eco_rounded, color: Colors.white, size: taille * 0.58),
+      child: Icon(Icons.eco, color: Couleurs.or100, size: taille * 0.56),
     );
   }
 }
 
-/// Texte rempli du dégradé vert de la marque (comme « AgroTech » et
-/// « depuis un seul endroit » sur le site).
-class TexteDegrade extends StatelessWidget {
-  const TexteDegrade(this.texte, {super.key, this.style, this.textAlign});
-
-  final String texte;
-  final TextStyle? style;
-  final TextAlign? textAlign;
-
-  @override
-  Widget build(BuildContext context) {
-    return ShaderMask(
-      blendMode: BlendMode.srcIn,
-      shaderCallback: (bounds) => Couleurs.degradeMarque.createShader(
-        Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-      ),
-      child: Text(texte, style: style, textAlign: textAlign),
-    );
-  }
-}
-
-/// Logo « SmartAgroTech » et accroche du site, au-dessus des formulaires de
-/// connexion et d'inscription.
-class EnteteMarque extends StatelessWidget {
-  const EnteteMarque({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    const vert = TextStyle(color: Couleurs.vert600);
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const LogoMarque(taille: 40),
-            const SizedBox(width: 10),
-            Text.rich(
-              const TextSpan(
-                children: [
-                  TextSpan(text: 'Smart'),
-                  TextSpan(text: 'AgroTech', style: vert),
-                ],
-              ),
-              style: theme.textTheme.titleLarge,
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Text.rich(
-          const TextSpan(
-            children: [
-              TextSpan(text: "L'agriculture sénégalaise, "),
-              TextSpan(text: 'plus intelligente', style: vert),
-              TextSpan(text: '.'),
-            ],
-          ),
-          textAlign: TextAlign.center,
-          style: theme.textTheme.headlineSmall,
-        ),
-      ],
-    );
-  }
-}
-
-/// Carte blanche arrondie qui contient un formulaire d'authentification.
+/// Carte blanche qui contient un formulaire d'authentification.
 class CarteFormulaire extends StatelessWidget {
   const CarteFormulaire({super.key, required this.child});
 
@@ -122,73 +42,95 @@ class CarteFormulaire extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Couleurs.ardoise200),
-        boxShadow: ombreCarte,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE4E8DF)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x100F2417),
+            blurRadius: 20,
+            offset: Offset(0, 8),
+          ),
+        ],
       ),
       child: child,
     );
   }
 }
 
-/// Bandeau vert en tête de chaque module, comme `BandeauApercu` sur le site.
+/// Titre en tête de chaque module, posé directement sur le fond de la page.
 class BandeauModule extends StatelessWidget {
   const BandeauModule({
     super.key,
-    required this.icone,
     required this.titre,
     required this.texte,
+    this.image,
   });
 
-  final String icone;
   final String titre;
   final String texte;
+  final String? image;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: Couleurs.degradeMarque,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: ombreCarte,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Text(icone, style: const TextStyle(fontSize: 24)),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  titre,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
+    if (image != null) {
+      return Card(
+        margin: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
+        child: SizedBox(
+          height: 128,
+          child: Row(
+            children: [
+              SizedBox(
+                width: 112,
+                child: ImageSource(image!, fit: BoxFit.cover),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        titre,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: Couleurs.vert900,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        texte,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Couleurs.ardoise500,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  texte,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(titre, style: theme.textTheme.headlineSmall),
+        const SizedBox(height: 4),
+        Text(
+          texte,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: Couleurs.ardoise500,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -198,7 +140,7 @@ class Etiquette extends StatelessWidget {
   const Etiquette(
     this.texte, {
     super.key,
-    this.fond = Couleurs.vert600,
+    this.fond = Couleurs.vert700,
     this.couleur = Colors.white,
   });
 
@@ -209,7 +151,7 @@ class Etiquette extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: fond,
         borderRadius: BorderRadius.circular(999),
@@ -225,7 +167,8 @@ class Etiquette extends StatelessWidget {
   }
 }
 
-/// Encadré coloré (rappel de récolte, prochain soin…).
+/// Encadré coloré (rappel de récolte, prochain soin…), avec un filet de
+/// couleur à gauche.
 class Encadre extends StatelessWidget {
   const Encadre({
     super.key,
@@ -235,7 +178,7 @@ class Encadre extends StatelessWidget {
     this.couleur = Couleurs.or600,
   });
 
-  final String icone;
+  final IconData icone;
   final String texte;
   final Color fond;
   final Color couleur;
@@ -244,18 +187,26 @@ class Encadre extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       decoration: BoxDecoration(
         color: fond,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: couleur.withValues(alpha: 0.25)),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(
-        '$icone  $texte',
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: couleur,
-          fontWeight: FontWeight.w600,
-        ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icone, size: 18, color: couleur),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              texte,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: couleur,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -274,12 +225,69 @@ class ImageSource extends StatelessWidget {
     if (source.startsWith('http')) {
       return Image.network(source, fit: fit, errorBuilder: (_, _, _) => vide);
     }
-    return Image.asset(source, fit: fit, errorBuilder: (_, _, _) => vide);
+    if (source.startsWith('assets/')) {
+      return Image.asset(source, fit: fit, errorBuilder: (_, _, _) => vide);
+    }
+    return Image.file(File(source), fit: fit, errorBuilder: (_, _, _) => vide);
   }
 }
 
-/// Carte avec une photo en haut, comme les cartes de parcelles, d'animaux et
-/// d'annonces du site.
+/// Sélection et aperçu d'une photo choisie pour une fiche.
+class PhotoField extends StatelessWidget {
+  const PhotoField({
+    super.key,
+    required this.buttonKey,
+    required this.label,
+    required this.onChoose,
+    this.image,
+    this.preview,
+  });
+
+  final Key buttonKey;
+  final String label;
+  final VoidCallback onChoose;
+  final String? image;
+  final Uint8List? preview;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasImage = preview != null || (image?.isNotEmpty ?? false);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(label, style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: SizedBox(
+            height: 170,
+            child: preview != null
+                ? Image.memory(preview!, fit: BoxFit.cover)
+                : hasImage
+                ? ImageSource(image!, fit: BoxFit.cover)
+                : const ColoredBox(
+                    color: Couleurs.ardoise100,
+                    child: Icon(
+                      Icons.add_photo_alternate_outlined,
+                      size: 44,
+                      color: Couleurs.ardoise500,
+                    ),
+                  ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          key: buttonKey,
+          onPressed: onChoose,
+          icon: const Icon(Icons.photo_library_outlined),
+          label: Text(hasImage ? 'Changer la photo' : 'Choisir une photo'),
+        ),
+      ],
+    );
+  }
+}
+
+/// Carte avec une photo en haut (parcelles, animaux, annonces).
 class CartePhoto extends StatelessWidget {
   const CartePhoto({
     super.key,
@@ -300,7 +308,7 @@ class CartePhoto extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
         onTap: onTap,
         child: Column(
@@ -333,22 +341,30 @@ class CartePhoto extends StatelessWidget {
   }
 }
 
-/// Ligne « emoji + texte » des cartes.
+/// Ligne « icône + texte » des cartes.
 class LigneInfo extends StatelessWidget {
-  const LigneInfo(this.emoji, this.texte, {super.key});
+  const LigneInfo(this.icone, this.texte, {super.key});
 
-  final String emoji;
+  final IconData icone;
   final String texte;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Text(
-        '$emoji  $texte',
-        style: Theme.of(
-          context,
-        ).textTheme.bodyMedium?.copyWith(color: Couleurs.ardoise500),
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        children: [
+          Icon(icone, size: 16, color: Couleurs.ardoise400),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              texte,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Couleurs.ardoise500),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -365,17 +381,24 @@ class CaseStat extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x080F2417),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
         border: Border.all(color: Couleurs.ardoise200),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             valeur,
-            textAlign: TextAlign.center,
             style: theme.textTheme.titleLarge?.copyWith(
               color: Couleurs.vert700,
             ),
@@ -383,7 +406,6 @@ class CaseStat extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             libelle,
-            textAlign: TextAlign.center,
             style: theme.textTheme.bodySmall?.copyWith(
               color: Couleurs.ardoise500,
             ),
@@ -413,10 +435,10 @@ class BoutonCarte extends StatelessWidget {
       return FilledButton(
         style: FilledButton.styleFrom(
           backgroundColor: Couleurs.danger,
-          minimumSize: const Size(0, 38),
+          minimumSize: const Size(0, 42),
           padding: const EdgeInsets.symmetric(horizontal: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
           textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
@@ -426,9 +448,9 @@ class BoutonCarte extends StatelessWidget {
     }
     return OutlinedButton(
       style: OutlinedButton.styleFrom(
-        minimumSize: const Size(0, 38),
+        minimumSize: const Size(0, 42),
         padding: const EdgeInsets.symmetric(horizontal: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         textStyle: const TextStyle(fontWeight: FontWeight.w700),
       ),
       onPressed: onPressed,

@@ -78,10 +78,47 @@ class _ProfilScreenState extends State<ProfilScreen> {
       appBar: AppBar(title: const Text('Mon profil')),
       body: FormBody(
         children: [
-          Text(
-            'Consultez et modifiez vos informations personnelles.',
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: Couleurs.ardoise500,
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Couleurs.vert100,
+                    foregroundColor: Couleurs.vert700,
+                    child: Text(
+                      '${user.prenom.isEmpty ? '' : user.prenom[0]}'
+                      '${user.nom.isEmpty ? '' : user.nom[0]}',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: Couleurs.vert700,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user.nomComplet,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: Couleurs.vert900,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Vos informations, à jour quand vous en avez besoin.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Couleurs.ardoise500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -121,7 +158,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
           if (user.role == UserRole.admin) ...[
             const SizedBox(height: 8),
             const Encadre(
-              icone: '🛡️',
+              icone: Icons.admin_panel_settings_outlined,
               texte:
                   'Compte administrateur : la gestion des utilisateurs, la '
                   'modération et les statistiques se font sur le site web.',
@@ -145,7 +182,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                     const SizedBox(height: 12),
                     if (_succes != null) ...[
                       Encadre(
-                        icone: '✅',
+                        icone: Icons.check_circle_outline,
                         texte: _succes!,
                         fond: Couleurs.vert50,
                         couleur: Couleurs.vert700,
@@ -154,7 +191,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                     ],
                     if (_erreur != null) ...[
                       Encadre(
-                        icone: '⚠️',
+                        icone: Icons.error_outline,
                         texte: _erreur!,
                         fond: Couleurs.dangerClair,
                         couleur: Couleurs.danger,

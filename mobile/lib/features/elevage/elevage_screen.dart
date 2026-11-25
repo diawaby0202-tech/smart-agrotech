@@ -92,11 +92,11 @@ class _ElevageScreenState extends State<ElevageScreen> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
               children: [
                 const BandeauModule(
-                  icone: '🐄',
                   titre: 'Gestion de l’élevage',
                   texte:
-                      'Un troupeau en bonne santé, suivi au plus près : '
-                      'soins, vaccins, alertes.',
+                      'Les soins à venir et les informations de chaque bête, '
+                      'au même endroit.',
+                  image: 'assets/img/elevage-bovin.jpg',
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -239,7 +239,9 @@ class _CarteAnimal extends StatelessWidget {
     final soin = prochain;
 
     return CartePhoto(
-      image: visuelEspece(animal.espece).image,
+      image: animal.image?.isNotEmpty == true
+          ? animal.image!
+          : visuelEspece(animal.espece).image,
       onTap: onOuvrir,
       badgeBas: Etiquette(etat.label, fond: etat.couleur),
       children: [
@@ -249,22 +251,21 @@ class _CarteAnimal extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         LigneInfo(
-          '🏷️',
-          [animal.espece, if (animal.race.isNotEmpty) animal.race].join(' · '),
+          Icons.sell_outlined,
+          [animal.espece, if (animal.race.isNotEmpty) animal.race].join(', '),
         ),
-        LigneInfo('🎂', ageAnimal(animal.dateNaissance)),
-        LigneInfo('💚', etat.label),
+        LigneInfo(Icons.cake_outlined, ageAnimal(animal.dateNaissance)),
         const SizedBox(height: 12),
         if (soin == null)
           const Encadre(
-            icone: '✅',
+            icone: Icons.check_circle_outline,
             texte: 'Aucun soin planifié',
             fond: Couleurs.vert50,
             couleur: Couleurs.vert700,
           )
         else
           Encadre(
-            icone: '💉',
+            icone: Icons.vaccines_outlined,
             texte:
                 '${soin.type.label} — '
                 '${formatDateLongue(soin.prochaineEcheance, annee: false)} '

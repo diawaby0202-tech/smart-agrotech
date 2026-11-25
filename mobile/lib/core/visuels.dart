@@ -1,63 +1,70 @@
-/// Photos et emojis associés aux données, avec les mêmes règles que le site
-/// web (`frontend/src/pages/*.jsx`), pour que les deux affichent la même image.
+/// Photos et icônes associées aux données. Les photos suivent les mêmes règles
+/// que le site web (`frontend/src/pages/*.jsx`), pour que les deux affichent
+/// la même image.
 library;
 
-typedef Visuel = ({String image, String emoji});
+import 'package:flutter/material.dart';
+
+typedef Visuel = ({String image});
 
 const _dossier = 'assets/img';
 
 Visuel visuelCulture(String nom) {
   final n = nom.toLowerCase();
-  if (n.contains('mil')) {
-    return (image: '$_dossier/culture-mil.jpg', emoji: '🌾');
-  }
-  if (n.contains('arachide')) {
-    return (image: '$_dossier/culture-arachide.jpg', emoji: '🥜');
-  }
+  if (n.contains('mil')) return (image: '$_dossier/culture-mil.jpg');
+  if (n.contains('arachide')) return (image: '$_dossier/culture-arachide.jpg');
   if (n.contains('maïs') || n.contains('mais')) {
-    return (image: '$_dossier/culture-mais.jpg', emoji: '🌽');
+    return (image: '$_dossier/culture-mais.jpg');
   }
-  return (image: '$_dossier/cultures.jpg', emoji: '🌱');
+  return (image: '$_dossier/cultures.jpg');
 }
 
 Visuel visuelEspece(String espece) {
   final e = espece.toLowerCase();
   if (['bov', 'vache', 'boeuf', 'bœuf', 'taureau'].any(e.contains)) {
-    return (image: '$_dossier/elevage-bovin.jpg', emoji: '🐄');
+    return (image: '$_dossier/elevage-bovin.jpg');
   }
   if (['cap', 'chèvre', 'chevre', 'bouc'].any(e.contains)) {
-    return (image: '$_dossier/elevage-caprin.jpg', emoji: '🐐');
+    return (image: '$_dossier/elevage-ovin.jpg');
   }
   if (['ovin', 'mouton', 'brebis', 'bélier', 'belier'].any(e.contains)) {
-    return (image: '$_dossier/elevage-ovin.jpg', emoji: '🐏');
+    return (image: '$_dossier/elevage-ovin.jpg');
   }
-  return (image: '$_dossier/elevage.jpg', emoji: '🐾');
+  if (['poulet', 'poule', 'volaille'].any(e.contains)) {
+    return (image: '$_dossier/elevage-volaille.jpg');
+  }
+  return (image: '$_dossier/elevage-bovin.jpg');
 }
 
 /// Image par défaut d'une annonce sans photo, selon sa catégorie.
 Visuel visuelCategorie(String categorie) => switch (categorie) {
-  'cereales' => (image: '$_dossier/culture-mil.jpg', emoji: '🌾'),
-  'legumes' => (image: '$_dossier/marche-tomates.jpg', emoji: '🍅'),
-  'fruits' => (image: '$_dossier/marche-oignons.jpg', emoji: '🍉'),
-  'betail' => (image: '$_dossier/elevage-bovin.jpg', emoji: '🐄'),
-  'intrants' => (image: '$_dossier/marche.jpg', emoji: '🧰'),
-  _ => (image: '$_dossier/marche.jpg', emoji: '📦'),
+  'cereales' => (image: '$_dossier/culture-mil.jpg'),
+  'legumes' => (image: '$_dossier/marche-tomates.jpg'),
+  'fruits' => (image: '$_dossier/marche-oignons.jpg'),
+  'betail' => (image: '$_dossier/elevage-bovin.jpg'),
+  _ => (image: '$_dossier/marche.jpg'),
 };
 
-const imageMeteo = '$_dossier/meteo.jpg';
+const imageMeteo = '$_dossier/meteo-arc-en-ciel.jpg';
 
-String iconeMeteo(String description) {
+IconData iconeMeteo(String description) {
   final d = description.toLowerCase();
-  if (d.contains('orage')) return '⛈️';
-  if (['pluie', 'averse', 'bruine'].any(d.contains)) return '🌦️';
-  if (['nuage', 'couvert', 'brume'].any(d.contains)) return '☁️';
-  if (['dégagé', 'clair', 'soleil'].any(d.contains)) return '☀️';
-  return '🌤️';
+  if (d.contains('orage')) return Icons.thunderstorm_outlined;
+  if (['pluie', 'averse', 'bruine'].any(d.contains)) {
+    return Icons.water_drop_outlined;
+  }
+  if (['nuage', 'couvert', 'brume'].any(d.contains)) {
+    return Icons.cloud_outlined;
+  }
+  if (['dégagé', 'clair', 'soleil'].any(d.contains)) {
+    return Icons.wb_sunny_outlined;
+  }
+  return Icons.wb_cloudy_outlined;
 }
 
-String emojiTypeAlerte(String type) => switch (type) {
-  'meteo' => '⛈️',
-  'vaccination' => '💉',
-  'culture' => '🌾',
-  _ => '🔔',
+IconData iconeTypeAlerte(String type) => switch (type) {
+  'meteo' => Icons.thunderstorm_outlined,
+  'vaccination' => Icons.vaccines_outlined,
+  'culture' => Icons.grass,
+  _ => Icons.notifications_none,
 };

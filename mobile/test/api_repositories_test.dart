@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +10,7 @@ import 'package:smart_agrotech/features/alertes/alertes_models.dart';
 import 'package:smart_agrotech/features/alertes/alertes_repository.dart';
 import 'package:smart_agrotech/features/cultures/parcelle.dart';
 import 'package:smart_agrotech/features/cultures/parcelle_repository.dart';
+import 'package:smart_agrotech/features/elevage/elevage_models.dart';
 import 'package:smart_agrotech/features/elevage/elevage_repository.dart';
 import 'package:smart_agrotech/features/marche/annonce.dart';
 import 'package:smart_agrotech/features/marche/annonce_repository.dart';
@@ -86,6 +88,47 @@ void main() {
     });
   });
 
+  test('parcelles : photo envoyée en multipart et URL relue', () async {
+    final temporaryDirectory = await Directory.systemTemp.createTemp(
+      'parcelle-upload-',
+    );
+    addTearDown(() => temporaryDirectory.delete(recursive: true));
+    final photo = File(
+      '${temporaryDirectory.path}${Platform.pathSeparator}parcelle.png',
+    );
+    await photo.writeAsBytes([1, 2, 3]);
+    final imageUrl = 'http://test/media/parcelles/parcelle.png';
+    final repository = ApiParcelleRepository(
+      client(
+        (_) => (
+          201,
+          {
+            'id': 8,
+            'nom': 'Bas-fond',
+            'culture': 'Mil',
+            'superficie': '1.50',
+            'localisation': '',
+            'date_semis': null,
+            'date_recolte_prevue': null,
+            'statut': 'preparation',
+            'notes': '',
+            'image': imageUrl,
+          },
+        ),
+      ),
+    );
+
+    final parcelle = await repository.create(
+      const Parcelle(nom: 'Bas-fond', culture: 'Mil', superficie: 1.5),
+      imagePath: photo.path,
+    );
+
+    expect(parcelle.image, imageUrl);
+    final form = corps() as FormData;
+    expect(form.fields.map((field) => field.key), contains('nom'));
+    expect(form.files.single.key, 'image');
+  });
+
   test('parcelles : erreur de validation du serveur', () async {
     final repository = ApiParcelleRepository(
       client(
@@ -139,6 +182,45 @@ void main() {
 
     await repository.suivis(5);
     expect(adapter.requests.last.queryParameters, {'animal': 5});
+  });
+
+  test('élevage : photo envoyée en multipart et URL relue', () async {
+    final temporaryDirectory = await Directory.systemTemp.createTemp(
+      'animal-upload-',
+    );
+    addTearDown(() => temporaryDirectory.delete(recursive: true));
+    final photo = File(
+      '${temporaryDirectory.path}${Platform.pathSeparator}animal.png',
+    );
+    await photo.writeAsBytes([1, 2, 3]);
+    final imageUrl = 'http://test/media/animaux/animal.png';
+    final repository = ApiElevageRepository(
+      client(
+        (_) => (
+          201,
+          {
+            'id': 9,
+            'espece': 'Ovin',
+            'race': '',
+            'identifiant': '',
+            'effectif': 1,
+            'date_naissance': null,
+            'notes': '',
+            'image': imageUrl,
+          },
+        ),
+      ),
+    );
+
+    final animal = await repository.createAnimal(
+      const Animal(espece: 'Ovin'),
+      imagePath: photo.path,
+    );
+
+    expect(animal.image, imageUrl);
+    final form = corps() as FormData;
+    expect(form.fields.map((field) => field.key), contains('espece'));
+    expect(form.files.single.key, 'image');
   });
 
   test('météo : prévisions et service indisponible', () async {

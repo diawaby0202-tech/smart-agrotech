@@ -1,7 +1,15 @@
+from io import BytesIO
+import tempfile
 from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
 from rest_framework.test import APITestCase
+from django.test import TestCase
+from PIL import Image
+
+from elevage.models import Animal, SuiviSanitaire
 
 from .models import Parcelle
 
@@ -27,6 +35,21 @@ class ParcelleTests(APITestCase):
         r = self.client.post(self.url, self.data)
         self.assertEqual(r.status_code, 201)
         self.assertEqual(Parcelle.objects.get().proprietaire, self.u1)
+
+    def test_creation_avec_photo(self):
+        image = BytesIO()
+        Image.new('RGB', (2, 2), 'green').save(image, 'PNG')
+        photo = SimpleUploadedFile('parcelle.png', image.getvalue(), content_type='image/png')
+        self.client.force_authenticate(self.u1)
+
+        with tempfile.TemporaryDirectory() as media_root:
+            with self.settings(MEDIA_ROOT=media_root):
+                response = self.client.post(
+                    self.url, {**self.data, 'image': photo}, format='multipart'
+                )
+                self.assertEqual(response.status_code, 201)
+                self.assertIn('/media/parcelles/', response.json()['image'])
+                self.assertTrue(Parcelle.objects.get().image)
 
     def test_isolation_entre_utilisateurs(self):
         Parcelle.objects.create(proprietaire=self.u1, nom='x', culture='y', superficie=1)
@@ -64,3 +87,21 @@ class ParcelleTests(APITestCase):
         self.client.force_authenticate(self.u1)
         noms = [p['nom'] for p in self.client.get(self.url + 'calendrier/').json()]
         self.assertEqual(noms, ['a', 'b'])
+
+
+class DonneesExempleTests(TestCase):
+    def test_ajoute_des_fiches_avec_photos_associees_et_sans_doublons(self):
+        user = creer('exemples@x.com')
+
+        call_command('ajouter_donnees_exemple', email=user.email)
+        call_command('ajouter_donnees_exemple', email=user.email)
+
+        self.assertEqual(Parcelle.objects.filter(proprietaire=user).count(), 3)
+        cultures = set(
+            Parcelle.objects.filter(proprietaire=user).values_list('culture', flat=True)
+        )
+        self.assertEqual(cultures, {'Arachide', 'Mil', 'Maïs'})
+        self.assertEqual(Animal.objects.filter(proprietaire=user).count(), 3)
+        self.assertEqual(
+            SuiviSanitaire.objects.filter(animal__proprietaire=user).count(), 2
+        )

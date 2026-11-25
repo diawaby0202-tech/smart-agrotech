@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../core/api_client.dart';
 import '../../core/api_exception.dart';
 import 'parcelle.dart';
@@ -8,8 +10,8 @@ abstract class ParcelleRepository {
   /// Parcelles non récoltées, triées par date de récolte prévue (RF-08).
   Future<List<Parcelle>> calendrier();
 
-  Future<Parcelle> create(Parcelle parcelle);
-  Future<Parcelle> update(Parcelle parcelle);
+  Future<Parcelle> create(Parcelle parcelle, {String? imagePath});
+  Future<Parcelle> update(Parcelle parcelle, {String? imagePath});
   Future<void> delete(int id);
 }
 
@@ -24,6 +26,14 @@ class ApiParcelleRepository implements ParcelleRepository {
       Parcelle.fromJson(Map<String, dynamic>.from(item as Map)),
   ];
 
+  Future<Object> _body(Parcelle parcelle, String? imagePath) async {
+    if (imagePath == null) return parcelle.toJson();
+    return FormData.fromMap({
+      ...parcelle.toJson(),
+      'image': await MultipartFile.fromFile(imagePath),
+    });
+  }
+
   @override
   Future<List<Parcelle>> list() =>
       _client.call((dio) async => _parse((await dio.get(_path)).data));
@@ -34,19 +44,28 @@ class ApiParcelleRepository implements ParcelleRepository {
   );
 
   @override
-  Future<Parcelle> create(Parcelle parcelle) => _client.call((dio) async {
-    final response = await dio.post(_path, data: parcelle.toJson());
-    return Parcelle.fromJson(Map<String, dynamic>.from(response.data as Map));
-  });
+  Future<Parcelle> create(Parcelle parcelle, {String? imagePath}) =>
+      _client.call((dio) async {
+        final response = await dio.post(
+          _path,
+          data: await _body(parcelle, imagePath),
+        );
+        return Parcelle.fromJson(
+          Map<String, dynamic>.from(response.data as Map),
+        );
+      });
 
   @override
-  Future<Parcelle> update(Parcelle parcelle) => _client.call((dio) async {
-    final response = await dio.patch(
-      '$_path${parcelle.id}/',
-      data: parcelle.toJson(),
-    );
-    return Parcelle.fromJson(Map<String, dynamic>.from(response.data as Map));
-  });
+  Future<Parcelle> update(Parcelle parcelle, {String? imagePath}) =>
+      _client.call((dio) async {
+        final response = await dio.patch(
+          '$_path${parcelle.id}/',
+          data: await _body(parcelle, imagePath),
+        );
+        return Parcelle.fromJson(
+          Map<String, dynamic>.from(response.data as Map),
+        );
+      });
 
   @override
   Future<void> delete(int id) =>
@@ -121,7 +140,7 @@ class MockParcelleRepository implements ParcelleRepository {
         ..sort((a, b) => a.dateRecoltePrevue!.compareTo(b.dateRecoltePrevue!));
 
   @override
-  Future<Parcelle> create(Parcelle parcelle) async {
+  Future<Parcelle> create(Parcelle parcelle, {String? imagePath}) async {
     _valider(parcelle);
     final created = parcelle.copyWith(id: _nextId++);
     _parcelles.add(created);
@@ -129,7 +148,7 @@ class MockParcelleRepository implements ParcelleRepository {
   }
 
   @override
-  Future<Parcelle> update(Parcelle parcelle) async {
+  Future<Parcelle> update(Parcelle parcelle, {String? imagePath}) async {
     _valider(parcelle);
     final index = _parcelles.indexWhere((p) => p.id == parcelle.id);
     if (index == -1) throw ApiException('Parcelle introuvable.');

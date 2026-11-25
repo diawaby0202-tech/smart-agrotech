@@ -70,11 +70,11 @@ class _MeteoScreenState extends State<MeteoScreen> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               children: [
                 const BandeauModule(
-                  icone: '⛅',
-                  titre: 'Alertes météo & environnementales',
+                  titre: 'Météo et alertes',
                   texte:
-                      'La météo de votre zone et des alertes précoces pour '
-                      'protéger vos activités.',
+                      'La météo de votre zone et les alertes utiles pour '
+                      'organiser vos travaux.',
+                  image: imageMeteo,
                 ),
                 const SizedBox(height: 16),
                 _CarteMeteo(
@@ -88,14 +88,14 @@ class _MeteoScreenState extends State<MeteoScreen> {
                 ),
                 for (final risque in donnees.meteo?.risques ?? <RisqueMeteo>[])
                   _CarteAlerte(
-                    icone: '⛈️',
+                    icone: Icons.thunderstorm_outlined,
                     titre: risque.titre,
                     message: risque.message,
                     niveau: risque.niveau,
                   ),
                 const SizedBox(height: 20),
                 Text(
-                  '🔔 Mes alertes ($nonLues non lue${nonLues > 1 ? 's' : ''})',
+                  'Mes alertes ($nonLues non lue${nonLues > 1 ? 's' : ''})',
                   style: theme.textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
@@ -121,16 +121,16 @@ class _MeteoScreenState extends State<MeteoScreen> {
                   ),
                 for (final alerte in donnees.alertes)
                   _CarteAlerte(
-                    icone: emojiTypeAlerte(alerte.type.apiValue),
+                    icone: iconeTypeAlerte(alerte.type.apiValue),
                     titre: alerte.titre,
                     message: alerte.message,
                     niveau: alerte.niveau,
                     details: [
-                      if (alerte.zone.isNotEmpty) '📍 ${alerte.zone}',
-                      '🕒 ${formatDateCourte(alerte.dateCreation)}, '
+                      if (alerte.zone.isNotEmpty) alerte.zone,
+                      '${formatDateCourte(alerte.dateCreation)}, '
                           '${alerte.dateCreation.hour.toString().padLeft(2, '0')}:'
                           '${alerte.dateCreation.minute.toString().padLeft(2, '0')}',
-                    ].join(' · '),
+                    ].join(', '),
                     nonLue: !alerte.lue,
                     onLue: alerte.lue
                         ? null
@@ -168,9 +168,8 @@ class _CarteMeteo extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: Couleurs.degradeMeteo,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: ombreCarte,
+        color: Couleurs.ciel500,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,11 +180,23 @@ class _CarteMeteo extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '📍 $ville, Sénégal',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: blanc,
-                      ),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.place_outlined,
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            '$ville, Sénégal',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: blanc,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     Text(
                       'Prévisions sur 5 jours',
@@ -207,10 +218,22 @@ class _CarteMeteo extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    Text(
-                      '${iconeMeteo(aujourdhui.description)} '
-                      '${aujourdhui.description}',
-                      style: theme.textTheme.bodySmall?.copyWith(color: blanc),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          iconeMeteo(aujourdhui.description),
+                          size: 16,
+                          color: blanc,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          aujourdhui.description,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: blanc,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -221,7 +244,7 @@ class _CarteMeteo extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
@@ -239,60 +262,61 @@ class _CarteMeteo extends StatelessWidget {
           const SizedBox(height: 14),
           if (erreur != null)
             Text(
-              '☁️  $erreur',
+              erreur!,
               style: theme.textTheme.bodyLarge?.copyWith(color: blanc),
             )
           else
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final jour in jours)
-                  Container(
-                    width: 96,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.25),
+            // Trois jours par ligne, sur toute la largeur de la carte.
+            LayoutBuilder(
+              builder: (context, contraintes) => Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final jour in jours)
+                    Container(
+                      width: ((contraintes.maxWidth - 16) / 3).floorToDouble(),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Couleurs.ciel700,
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          nomJour(jour.date),
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: blanc,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          iconeMeteo(jour.description),
-                          style: const TextStyle(fontSize: 22),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${jour.tempMax.round()}° / ${jour.tempMin.round()}°',
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: blanc,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        if (jour.pluieMm > 0 || jour.ventKmh >= 30)
+                      child: Column(
+                        children: [
                           Text(
-                            jour.pluieMm > 0
-                                ? '${formatNombre(jour.pluieMm)} mm'
-                                : 'Vent : ${jour.ventKmh} km/h',
-                            style: theme.textTheme.labelSmall?.copyWith(
+                            nomJour(jour.date),
+                            style: theme.textTheme.labelMedium?.copyWith(
                               color: blanc,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
-                      ],
+                          const SizedBox(height: 4),
+                          Icon(
+                            iconeMeteo(jour.description),
+                            size: 24,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${jour.tempMax.round()}° / ${jour.tempMin.round()}°',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: blanc,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          if (jour.pluieMm > 0 || jour.ventKmh >= 30)
+                            Text(
+                              jour.pluieMm > 0
+                                  ? '${formatNombre(jour.pluieMm)} mm'
+                                  : 'Vent : ${jour.ventKmh} km/h',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: blanc,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
         ],
       ),
@@ -335,7 +359,7 @@ class _CarteAlerte extends StatelessWidget {
     this.onLue,
   });
 
-  final String icone;
+  final IconData icone;
   final String titre;
   final String message;
   final NiveauAlerte niveau;
@@ -348,29 +372,29 @@ class _CarteAlerte extends StatelessWidget {
     final theme = Theme.of(context);
     final style = _styleNiveau(niveau);
 
-    // Une bordure arrondie doit être d'une seule couleur : le liseré gauche,
-    // plus foncé, est donc une bande dessinée à part.
+    // Liseré de couleur à gauche, selon le niveau de l'alerte.
     return Container(
       margin: const EdgeInsets.only(top: 12),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: style.fond,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: style.bord.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(width: 5, color: style.bord),
-            Expanded(child: _contenu(theme, style.libelle, style.badge)),
+            Container(width: 4, color: style.bord),
+            Expanded(
+              child: _contenu(theme, style.libelle, style.badge, style.bord),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _contenu(ThemeData theme, String libelle, Color badge) {
+  Widget _contenu(ThemeData theme, String libelle, Color badge, Color bord) {
     return Padding(
       padding: const EdgeInsets.all(14),
       child: Column(
@@ -379,7 +403,7 @@ class _CarteAlerte extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(icone, style: const TextStyle(fontSize: 22)),
+              Icon(icone, size: 22, color: bord),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -404,7 +428,7 @@ class _CarteAlerte extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 6),
-          Text('💡 $message', style: theme.textTheme.bodyMedium),
+          Text(message, style: theme.textTheme.bodyMedium),
           if (onLue != null) ...[
             const SizedBox(height: 10),
             BoutonCarte('Marquer comme lue', onPressed: onLue!),

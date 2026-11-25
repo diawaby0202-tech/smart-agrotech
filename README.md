@@ -44,12 +44,16 @@ Prérequis : Python 3.11+, PostgreSQL.
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate        # Windows : venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env            # puis renseigner les valeurs
 python manage.py migrate
+python manage.py createsuperuser
 python manage.py runserver
+python manage.py check
 ```
+
+Dans PowerShell sous Windows, activez l'environnement avec `.\venv\Scripts\Activate.ps1` au lieu de `source venv/bin/activate`.
 
 API disponible sur `http://localhost:8000`. Documentation Swagger sur `http://localhost:8000/api/docs/`.
 
@@ -91,6 +95,7 @@ DB_PASSWORD=
 DB_HOST=localhost
 DB_PORT=5432
 WEATHER_API_KEY=
+
 ```
 
 ## Règles de travail avec Git

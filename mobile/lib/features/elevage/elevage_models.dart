@@ -10,6 +10,7 @@ class Animal {
     this.effectif = 1,
     this.dateNaissance,
     this.notes = '',
+    this.image,
   });
 
   final int? id;
@@ -21,6 +22,7 @@ class Animal {
   final int effectif;
   final DateTime? dateNaissance;
   final String notes;
+  final String? image;
 
   bool get estLot => effectif > 1;
 
@@ -35,6 +37,7 @@ class Animal {
     effectif: json['effectif'] as int? ?? 1,
     dateNaissance: parseDate(json['date_naissance']),
     notes: json['notes'] as String? ?? '',
+    image: json['image'] as String?,
   );
 
   Map<String, dynamic> toJson() => {
@@ -46,7 +49,7 @@ class Animal {
     'notes': notes,
   };
 
-  Animal copyWith({int? id}) => Animal(
+  Animal copyWith({int? id, String? image}) => Animal(
     id: id ?? this.id,
     espece: espece,
     race: race,
@@ -54,6 +57,7 @@ class Animal {
     effectif: effectif,
     dateNaissance: dateNaissance,
     notes: notes,
+    image: image ?? this.image,
   );
 }
 

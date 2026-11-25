@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/api_exception.dart';
+import '../../core/design.dart';
+import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import 'elevage_models.dart';
 import 'elevage_repository.dart';
@@ -66,6 +68,15 @@ class _SuiviFormScreenState extends State<SuiviFormScreen> {
       appBar: AppBar(title: Text('Suivi — ${widget.animal.titre}')),
       body: FormBody(
         children: [
+          Encadre(
+            icone: Icons.health_and_safety_outlined,
+            texte:
+                'Gardez une trace des soins et de la prochaine échéance pour '
+                '${widget.animal.titre}.',
+            fond: Couleurs.vert50,
+            couleur: Couleurs.vert700,
+          ),
+          const SizedBox(height: 16),
           SegmentedButton<TypeSuivi>(
             segments: [
               for (final type in TypeSuivi.values)

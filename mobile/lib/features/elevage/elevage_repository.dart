@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../core/api_client.dart';
 import '../../core/api_exception.dart';
 import '../../core/format.dart';
@@ -5,8 +7,8 @@ import 'elevage_models.dart';
 
 abstract class ElevageRepository {
   Future<List<Animal>> animaux();
-  Future<Animal> createAnimal(Animal animal);
-  Future<Animal> updateAnimal(Animal animal);
+  Future<Animal> createAnimal(Animal animal, {String? imagePath});
+  Future<Animal> updateAnimal(Animal animal, {String? imagePath});
   Future<void> deleteAnimal(int id);
 
   /// Historique sanitaire d'un animal, du plus récent au plus ancien.
@@ -36,6 +38,14 @@ class ApiElevageRepository implements ElevageRepository {
     for (final item in data as List) SuiviSanitaire.fromJson(_map(item)),
   ];
 
+  Future<Object> _body(Animal animal, String? imagePath) async {
+    if (imagePath == null) return animal.toJson();
+    return FormData.fromMap({
+      ...animal.toJson(),
+      'image': await MultipartFile.fromFile(imagePath),
+    });
+  }
+
   @override
   Future<List<Animal>> animaux() => _client.call(
     (dio) async => [
@@ -45,20 +55,30 @@ class ApiElevageRepository implements ElevageRepository {
   );
 
   @override
-  Future<Animal> createAnimal(Animal animal) => _client.call(
-    (dio) async => Animal.fromJson(
-      _map((await dio.post(_animaux, data: animal.toJson())).data),
-    ),
-  );
+  Future<Animal> createAnimal(Animal animal, {String? imagePath}) =>
+      _client.call(
+        (dio) async => Animal.fromJson(
+          _map(
+            (await dio.post(
+              _animaux,
+              data: await _body(animal, imagePath),
+            )).data,
+          ),
+        ),
+      );
 
   @override
-  Future<Animal> updateAnimal(Animal animal) => _client.call(
-    (dio) async => Animal.fromJson(
-      _map(
-        (await dio.patch('$_animaux${animal.id}/', data: animal.toJson())).data,
-      ),
-    ),
-  );
+  Future<Animal> updateAnimal(Animal animal, {String? imagePath}) =>
+      _client.call(
+        (dio) async => Animal.fromJson(
+          _map(
+            (await dio.patch(
+              '$_animaux${animal.id}/',
+              data: await _body(animal, imagePath),
+            )).data,
+          ),
+        ),
+      );
 
   @override
   Future<void> deleteAnimal(int id) =>
@@ -159,7 +179,7 @@ class MockElevageRepository implements ElevageRepository {
   Future<List<Animal>> animaux() async => _animaux.reversed.toList();
 
   @override
-  Future<Animal> createAnimal(Animal animal) async {
+  Future<Animal> createAnimal(Animal animal, {String? imagePath}) async {
     if (animal.effectif < 1) {
       const message = "L'effectif doit être au moins 1.";
       throw ApiException(message, fieldErrors: {'effectif': message});
@@ -170,7 +190,7 @@ class MockElevageRepository implements ElevageRepository {
   }
 
   @override
-  Future<Animal> updateAnimal(Animal animal) async {
+  Future<Animal> updateAnimal(Animal animal, {String? imagePath}) async {
     final index = _animaux.indexWhere((a) => a.id == animal.id);
     if (index == -1) throw ApiException('Animal introuvable.');
     _animaux[index] = animal;

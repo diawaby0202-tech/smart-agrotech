@@ -1,64 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Couleurs du site web (variables CSS de `frontend/src/styles.css`), pour que
-/// l'app mobile et le site aient la même identité.
+/// Palette tirée des champs sénégalais : le vert de l'hivernage, le jaune du
+/// mil mûr et le bleu ciel pour la météo. Couleurs unies, sans dégradés.
 class Couleurs {
-  static const vert900 = Color(0xFF0F2E1C);
-  static const vert800 = Color(0xFF14532D);
-  static const vert700 = Color(0xFF166534);
-  static const vert600 = Color(0xFF15803D);
-  static const vert500 = Color(0xFF16A34A);
-  static const vert400 = Color(0xFF22C55E);
-  static const vert100 = Color(0xFFDCFCE7);
-  static const vert50 = Color(0xFFF0FDF4);
+  // Vert de l'hivernage, du plus foncé au plus clair.
+  static const vert900 = Color(0xFF14281B);
+  static const vert800 = Color(0xFF1C3A26);
+  static const vert700 = Color(0xFF24502F);
+  static const vert600 = Color(0xFF2E6B3F);
+  static const vert500 = Color(0xFF3F8551);
+  static const vert400 = Color(0xFF8DC08F);
+  static const vert100 = Color(0xFFDDEBDC);
+  static const vert50 = Color(0xFFEEF5EC);
 
-  static const or600 = Color(0xFFB45309);
-  static const or500 = Color(0xFFD97706);
-  static const or400 = Color(0xFFF59E0B);
-  static const or100 = Color(0xFFFEF3C7);
+  // Jaune du mil mûr : boutons d'action et mises en avant.
+  static const or600 = Color(0xFF8A5E06);
+  static const or500 = Color(0xFFD99A1E);
+  static const or400 = Color(0xFFEDBE55);
+  static const or100 = Color(0xFFFAEFD3);
 
-  static const encre = Color(0xFF0B1220);
-  static const ardoise700 = Color(0xFF334155);
-  static const ardoise500 = Color(0xFF64748B);
-  static const ardoise400 = Color(0xFF94A3B8);
-  static const ardoise200 = Color(0xFFE2E8F0);
-  static const ardoise100 = Color(0xFFF1F5F9);
-  static const ardoise50 = Color(0xFFF8FAFC);
+  // Bleu ciel : la météo.
+  static const ciel700 = Color(0xFF1577B8);
+  static const ciel500 = Color(0xFF1E8CD3);
+  static const ciel100 = Color(0xFFDDEEFA);
 
-  static const danger = Color(0xFFDC2626);
-  static const dangerClair = Color(0xFFFEE2E2);
-  static const info = Color(0xFF0284C7);
-  static const infoClair = Color(0xFFE0F2FE);
+  // Gris légèrement verts pour le texte, les bordures et les fonds.
+  static const encre = Color(0xFF1D2420);
+  static const ardoise700 = Color(0xFF3F4842);
+  static const ardoise500 = Color(0xFF6B746D);
+  static const ardoise400 = Color(0xFF9AA29B);
+  static const ardoise200 = Color(0xFFDCE0D8);
+  static const ardoise100 = Color(0xFFECEEE8);
+  static const ardoise50 = Color(0xFFF4F5F1);
 
-  /// Dégradé « marque » des boutons, logos et bandeaux.
-  static const degradeMarque = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [vert500, vert600, vert900],
-    stops: [0, 0.55, 1],
-  );
-
-  /// Dégradé bleu de la carte météo.
-  static const degradeMeteo = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF0EA5E9), Color(0xFF0369A1)],
-  );
+  static const danger = Color(0xFFB3261E);
+  static const dangerClair = Color(0xFFF8E0DC);
+  static const info = ciel700;
+  static const infoClair = ciel100;
 }
 
-/// Ombre douce des cartes (`--ombre-sm` du site).
-const ombreCarte = [
-  BoxShadow(color: Color(0x140F2E1C), blurRadius: 8, offset: Offset(0, 2)),
-];
-
 class AppTheme {
-  /// Polices Sora (titres) et Inter (texte), comme sur le site. Désactivé
-  /// dans les tests, qui n'ont pas accès à Internet.
+  /// Polices Bricolage Grotesque (titres) et Atkinson Hyperlegible (texte),
+  /// une police dessinée pour rester lisible quand on voit mal, ici au soleil
+  /// dans un champ. Désactivé dans les tests, qui n'ont pas accès à Internet.
   static bool policesWeb = true;
 
-  /// Animations décoratives en boucle (photo d'accueil). Coupées dans les
-  /// tests, qui attendent que l'écran soit immobile.
+  /// Animations décoratives en boucle. Coupées dans les tests, qui attendent
+  /// que l'écran soit immobile.
   static bool animations = true;
 
   static TextTheme _textes() {
@@ -67,10 +56,14 @@ class AppTheme {
       displayColor: Couleurs.encre,
     );
     if (!policesWeb) return base;
-    final corps = GoogleFonts.interTextTheme(base);
+    final corps = GoogleFonts.atkinsonHyperlegibleTextTheme(base);
     TextStyle? titre(TextStyle? style) => style == null
         ? null
-        : GoogleFonts.sora(textStyle: style, fontWeight: FontWeight.w700);
+        : GoogleFonts.bricolageGrotesque(
+            textStyle: style,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.4,
+          );
     return corps.copyWith(
       displaySmall: titre(corps.displaySmall),
       headlineLarge: titre(corps.headlineLarge),
@@ -96,13 +89,15 @@ class AppTheme {
     return ThemeData(
       colorScheme: schema,
       textTheme: textes,
-      scaffoldBackgroundColor: Couleurs.ardoise50,
+      scaffoldBackgroundColor: const Color(0xFFF7F8F4),
+      dividerColor: Couleurs.ardoise200,
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.white,
+        backgroundColor: Couleurs.ardoise50,
         foregroundColor: Couleurs.encre,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        scrolledUnderElevation: 1,
+        scrolledUnderElevation: 0,
+        shape: const Border(bottom: BorderSide(color: Color(0xFFE7EAE3))),
         titleTextStyle: textes.titleLarge?.copyWith(color: Couleurs.encre),
       ),
       cardTheme: CardThemeData(
@@ -111,13 +106,13 @@ class AppTheme {
         elevation: 0,
         margin: const EdgeInsets.symmetric(vertical: 6),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Couleurs.ardoise200),
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFFE4E8DF)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: const Color(0xFFFDFEFB),
         border: OutlineInputBorder(
           borderRadius: rayon,
           borderSide: const BorderSide(color: Couleurs.ardoise200),
@@ -128,13 +123,13 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: rayon,
-          borderSide: const BorderSide(color: Couleurs.vert500, width: 2),
+          borderSide: const BorderSide(color: Couleurs.vert600, width: 1.5),
         ),
         hintStyle: const TextStyle(color: Couleurs.ardoise400),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: Couleurs.vert600,
+          backgroundColor: Couleurs.vert700,
           foregroundColor: Colors.white,
           minimumSize: const Size.fromHeight(50),
           shape: RoundedRectangleBorder(borderRadius: rayon),
@@ -151,17 +146,22 @@ class AppTheme {
           shape: RoundedRectangleBorder(borderRadius: rayon),
         ),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: Couleurs.vert600,
-        foregroundColor: Colors.white,
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(foregroundColor: Couleurs.vert700),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: Couleurs.or500,
+        foregroundColor: Couleurs.encre,
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: Colors.white,
-        selectedColor: Couleurs.vert600,
-        secondarySelectedColor: Couleurs.vert600,
+        selectedColor: Couleurs.vert700,
+        secondarySelectedColor: Couleurs.vert700,
         checkmarkColor: Colors.white,
         side: const BorderSide(color: Couleurs.ardoise200),
-        shape: const StadiumBorder(),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         labelStyle: textes.labelLarge?.copyWith(color: Couleurs.ardoise700),
         secondaryLabelStyle: textes.labelLarge?.copyWith(color: Colors.white),
       ),
@@ -169,6 +169,7 @@ class AppTheme {
         backgroundColor: Colors.white,
         indicatorColor: Couleurs.vert100,
         surfaceTintColor: Colors.transparent,
+        height: 72,
         labelTextStyle: WidgetStatePropertyAll(
           textes.labelMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
@@ -176,7 +177,7 @@ class AppTheme {
       tabBarTheme: const TabBarThemeData(
         labelColor: Couleurs.vert700,
         unselectedLabelColor: Couleurs.ardoise500,
-        indicatorColor: Couleurs.vert600,
+        indicatorColor: Couleurs.vert700,
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: Couleurs.vert600,

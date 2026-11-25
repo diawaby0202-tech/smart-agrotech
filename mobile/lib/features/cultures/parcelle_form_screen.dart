@@ -1,8 +1,13 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart' as picker;
 import 'package:provider/provider.dart';
 
 import '../../core/api_exception.dart';
+import '../../core/design.dart';
 import '../../core/format.dart';
+import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../auth/validators.dart';
 import 'parcelle.dart';
@@ -12,6 +17,13 @@ import 'parcelle_repository.dart';
 /// liste doit être rechargée.
 class ParcelleFormScreen extends StatefulWidget {
   const ParcelleFormScreen({super.key, this.parcelle});
+
+  static Future<picker.XFile?> Function() choisirImage = () =>
+      picker.ImagePicker().pickImage(
+        source: picker.ImageSource.gallery,
+        maxWidth: 1600,
+        imageQuality: 80,
+      );
 
   final Parcelle? parcelle;
 
@@ -36,6 +48,8 @@ class _ParcelleFormScreenState extends State<ParcelleFormScreen> {
   late DateTime? _dateRecolte = widget.parcelle?.dateRecoltePrevue;
   late StatutParcelle _statut =
       widget.parcelle?.statut ?? StatutParcelle.preparation;
+  picker.XFile? _photo;
+  Uint8List? _apercu;
 
   bool _loading = false;
   String? _error;
@@ -61,6 +75,21 @@ class _ParcelleFormScreenState extends State<ParcelleFormScreen> {
     return _serverErrors['superficie'];
   }
 
+  Future<void> _choisirPhoto() async {
+    try {
+      final photo = await ParcelleFormScreen.choisirImage();
+      if (photo == null) return;
+      final apercu = await photo.readAsBytes();
+      if (!mounted) return;
+      setState(() {
+        _photo = photo;
+        _apercu = apercu;
+      });
+    } on Exception {
+      if (mounted) showMessage(context, 'Impossible d\'ouvrir la galerie.');
+    }
+  }
+
   Future<void> _submit() async {
     setState(() {
       _serverErrors = const {};
@@ -78,14 +107,15 @@ class _ParcelleFormScreenState extends State<ParcelleFormScreen> {
       dateRecoltePrevue: _dateRecolte,
       statut: _statut,
       notes: _notes.text.trim(),
+      image: _photo?.path ?? widget.parcelle?.image,
     );
 
     setState(() => _loading = true);
     final repository = context.read<ParcelleRepository>();
     try {
       await (_isEdit
-          ? repository.update(parcelle)
-          : repository.create(parcelle));
+          ? repository.update(parcelle, imagePath: _photo?.path)
+          : repository.create(parcelle, imagePath: _photo?.path));
       if (mounted) Navigator.of(context).pop(true);
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -132,6 +162,23 @@ class _ParcelleFormScreenState extends State<ParcelleFormScreen> {
         key: _formKey,
         child: FormBody(
           children: [
+            Encadre(
+              icone: Icons.grass_outlined,
+              texte: _isEdit
+                  ? 'Mettez à jour les informations de cette parcelle.'
+                  : 'Quelques détails suffisent pour suivre la parcelle, du semis à la récolte.',
+              fond: Couleurs.vert50,
+              couleur: Couleurs.vert700,
+            ),
+            const SizedBox(height: 16),
+            PhotoField(
+              buttonKey: const Key('parcelle-choisir-photo'),
+              label: 'Photo de la parcelle (facultatif)',
+              image: widget.parcelle?.image,
+              preview: _apercu,
+              onChoose: _choisirPhoto,
+            ),
+            const SizedBox(height: 16),
             TextFormField(
               key: const Key('parcelle-nom'),
               controller: _nom,

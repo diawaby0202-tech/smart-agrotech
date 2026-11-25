@@ -74,11 +74,11 @@ class _CulturesScreenState extends State<CulturesScreen> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
               children: [
                 const BandeauModule(
-                  icone: '🌾',
                   titre: 'Suivi des cultures',
                   texte:
-                      'Suivez vos parcelles de la semence à la récolte, '
-                      'anticipez chaque étape.',
+                      'De la préparation à la récolte, gardez un œil sur '
+                      'chaque parcelle.',
+                  image: 'assets/img/culture-mil.jpg',
                 ),
                 const SizedBox(height: 16),
                 _Statistiques(parcelles: parcelles),
@@ -234,25 +234,40 @@ class _CarteParcelle extends StatelessWidget {
     };
 
     return CartePhoto(
-      image: visuelCulture(parcelle.culture).image,
+      image: parcelle.image?.isNotEmpty == true
+          ? parcelle.image!
+          : visuelCulture(parcelle.culture).image,
       onTap: onModifier,
-      badgeBas: Etiquette(parcelle.statut.label, fond: couleurStatut),
+      badgeBas: Etiquette(
+        parcelle.statut.label,
+        fond: couleurStatut,
+        couleur: couleurStatut == Couleurs.or500
+            ? Couleurs.encre
+            : Colors.white,
+      ),
       children: [
         Text(
-          '${parcelle.nom} · ${parcelle.culture}',
-          style: theme.textTheme.titleMedium,
+          parcelle.culture,
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: Couleurs.or600,
+            fontWeight: FontWeight.w700,
+          ),
         ),
+        Text(parcelle.nom, style: theme.textTheme.titleMedium),
         const SizedBox(height: 4),
         LigneInfo(
-          '📐',
+          Icons.straighten,
           [
             '${formatNombre(parcelle.superficie)} ha',
             if (parcelle.localisation.isNotEmpty) parcelle.localisation,
-          ].join(' · '),
+          ].join(', '),
         ),
-        LigneInfo('🌱', 'Semis : ${formatDateLongue(parcelle.dateSemis)}'),
         LigneInfo(
-          '🧺',
+          Icons.grass,
+          'Semis : ${formatDateLongue(parcelle.dateSemis)}',
+        ),
+        LigneInfo(
+          Icons.agriculture_outlined,
           'Récolte : ${formatDateLongue(parcelle.dateRecoltePrevue)}',
         ),
         const SizedBox(height: 12),
@@ -266,12 +281,12 @@ class _CarteParcelle extends StatelessWidget {
         const SizedBox(height: 4),
         ClipRRect(
           borderRadius: BorderRadius.circular(99),
-          child: LinearProgressIndicator(value: avancement / 100, minHeight: 8),
+          child: LinearProgressIndicator(value: avancement / 100, minHeight: 6),
         ),
         if (rappel != null) ...[
           const SizedBox(height: 12),
           Encadre(
-            icone: '⚠️',
+            icone: Icons.schedule,
             texte: rappel,
             fond: enRetard ? Couleurs.dangerClair : Couleurs.or100,
             couleur: enRetard ? Couleurs.danger : Couleurs.or600,

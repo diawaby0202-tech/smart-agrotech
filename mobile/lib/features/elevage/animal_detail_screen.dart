@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/design.dart';
 import '../../core/format.dart';
+import '../../core/theme.dart';
+import '../../core/visuels.dart';
 import '../../core/widgets.dart';
 import 'animal_form_screen.dart';
 import 'elevage_models.dart';
@@ -85,28 +88,31 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         builder: (context, suivis) => ListView(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 88),
           children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _Info('Espèce', _animal.espece),
-                    if (_animal.race.isNotEmpty) _Info('Race', _animal.race),
-                    if (_animal.identifiant.isNotEmpty)
-                      _Info('Identifiant', _animal.identifiant),
-                    _Info(
-                      'Effectif',
-                      _animal.estLot
-                          ? '${_animal.effectif} (lot)'
-                          : '1 (animal seul)',
-                    ),
-                    if (_animal.dateNaissance != null)
-                      _Info('Naissance', formatDate(_animal.dateNaissance)),
-                    if (_animal.notes.isNotEmpty) _Info('Notes', _animal.notes),
-                  ],
+            CartePhoto(
+              image: _animal.image?.isNotEmpty == true
+                  ? _animal.image!
+                  : visuelEspece(_animal.espece).image,
+              children: [
+                Text(
+                  _animal.estLot ? 'Votre lot' : 'Votre animal',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: Couleurs.or600,
+                  ),
                 ),
-              ),
+                _Info('Espèce', _animal.espece),
+                if (_animal.race.isNotEmpty) _Info('Race', _animal.race),
+                if (_animal.identifiant.isNotEmpty)
+                  _Info('Identifiant', _animal.identifiant),
+                _Info(
+                  'Effectif',
+                  _animal.estLot
+                      ? '${_animal.effectif} (lot)'
+                      : '1 (animal seul)',
+                ),
+                if (_animal.dateNaissance != null)
+                  _Info('Naissance', formatDate(_animal.dateNaissance)),
+                if (_animal.notes.isNotEmpty) _Info('Notes', _animal.notes),
+              ],
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),

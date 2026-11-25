@@ -189,6 +189,15 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
         key: _formKey,
         child: FormBody(
           children: [
+            const design.Encadre(
+              icone: Icons.storefront_outlined,
+              texte:
+                  'Une photo nette et quelques détails aident les acheteurs '
+                  'à trouver votre produit.',
+              fond: Couleurs.vert50,
+              couleur: Couleurs.vert700,
+            ),
+            const SizedBox(height: 16),
             TextFormField(
               key: const Key('annonce-titre'),
               controller: _titre,
@@ -342,9 +351,20 @@ class _ZonePhoto extends StatelessWidget {
             child:
                 image ??
                 const Center(
-                  child: Text(
-                    '📷  Aucune photo',
-                    style: TextStyle(color: Couleurs.ardoise500),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.add_a_photo_outlined,
+                        size: 32,
+                        color: Couleurs.ardoise400,
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        'Aucune photo',
+                        style: TextStyle(color: Couleurs.ardoise500),
+                      ),
+                    ],
                   ),
                 ),
           ),
@@ -420,16 +440,12 @@ class _CoordonneesVendeur extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Text('👤  ${user?.nomComplet ?? ''}'),
-          const SizedBox(height: 2),
-          Text(
+          design.LigneInfo(Icons.person_outline, user?.nomComplet ?? ''),
+          design.LigneInfo(
+            Icons.call_outlined,
             telephone.isEmpty
-                ? '📞  Aucun numéro dans votre profil'
-                : '📞  ${formatTelephone(telephone)}',
-            style: TextStyle(
-              color: telephone.isEmpty ? Couleurs.danger : null,
-              fontWeight: telephone.isEmpty ? FontWeight.w700 : null,
-            ),
+                ? 'Aucun numéro dans votre profil'
+                : formatTelephone(telephone),
           ),
           const SizedBox(height: 8),
           TextButton(

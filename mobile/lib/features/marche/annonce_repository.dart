@@ -72,64 +72,10 @@ class ApiAnnonceRepository implements AnnonceRepository {
       _client.call((dio) => dio.delete('$_path$id/'));
 }
 
-/// Données fictives en mémoire (mode démo). Les photos ne sont pas conservées.
+/// Données en mémoire (mode démo). Les photos ne sont pas conservées.
 class MockAnnonceRepository implements AnnonceRepository {
-  MockAnnonceRepository() {
-    final now = DateTime.now();
-    _annonces.addAll([
-      Annonce(
-        id: 1,
-        titre: 'Arachide décortiquée',
-        description: 'Récolte de cette saison, bien séchée.',
-        categorie: CategorieAnnonce.cereales,
-        prix: 45000,
-        quantite: 'Sac de 50 kg',
-        zone: 'Kaolack',
-        vendeurNom: 'Moussa Ndiaye',
-        vendeurTelephone: '781112233',
-        dateCreation: now.subtract(const Duration(days: 1)),
-      ),
-      Annonce(
-        id: 2,
-        titre: 'Tomates fraîches',
-        description: 'Cueillies le matin, livraison possible sur Dakar.',
-        categorie: CategorieAnnonce.legumes,
-        prix: 8000,
-        quantite: 'Cageot de 20 kg',
-        zone: 'Dakar',
-        vendeurNom: 'Awa Diop',
-        vendeurTelephone: '771234567',
-        estProprietaire: true,
-        dateCreation: now.subtract(const Duration(days: 2)),
-      ),
-      Annonce(
-        id: 3,
-        titre: 'Moutons Ladoum',
-        description: 'Deux béliers de 18 mois, vaccinés.',
-        categorie: CategorieAnnonce.betail,
-        prix: 350000,
-        quantite: '2 têtes',
-        zone: 'Thiès',
-        vendeurNom: 'Ibrahima Sow',
-        vendeurTelephone: '764445566',
-        dateCreation: now.subtract(const Duration(days: 4)),
-      ),
-      Annonce(
-        id: 4,
-        titre: 'Mangues Kent',
-        categorie: CategorieAnnonce.fruits,
-        prix: 12000,
-        quantite: 'Carton de 15 kg',
-        zone: 'Ziguinchor',
-        vendeurNom: 'Fatou Badji',
-        vendeurTelephone: '705556677',
-        dateCreation: now.subtract(const Duration(days: 6)),
-      ),
-    ]);
-  }
-
   final List<Annonce> _annonces = [];
-  int _nextId = 5;
+  int _nextId = 1;
 
   @override
   Future<List<Annonce>> list(FiltreAnnonces filtre) async =>

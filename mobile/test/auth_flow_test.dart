@@ -5,10 +5,40 @@ import 'package:smart_agrotech/features/auth/mock_auth_repository.dart';
 import 'helpers.dart';
 
 void main() {
-  testWidgets('un visiteur arrive sur l\'écran de connexion', (tester) async {
+  testWidgets('un visiteur arrive sur la page de bienvenue', (tester) async {
     await pumpApp(tester);
 
-    expect(find.text('Se connecter'), findsOneWidget);
+    expect(find.byKey(const Key('welcome-login')), findsOneWidget);
+    expect(find.byKey(const Key('welcome-register')), findsOneWidget);
+    expect(find.byKey(const Key('login-email')), findsNothing);
+  });
+
+  testWidgets('la page de bienvenue ouvre les formulaires', (tester) async {
+    await pumpApp(tester);
+    await tester.tap(find.byKey(const Key('welcome-register')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Créer un compte'), findsOneWidget);
+  });
+
+  testWidgets('l’affiche de bienvenue occupe toute la largeur du téléphone', (
+    tester,
+  ) async {
+    tester.view
+      ..devicePixelRatio = 1
+      ..physicalSize = const Size(390, 844);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await pumpApp(tester);
+
+    final affiche = find.byWidgetPredicate(
+      (widget) =>
+          widget is Image &&
+          widget.image is AssetImage &&
+          (widget.image as AssetImage).assetName == 'assets/img/hero.jpg',
+    );
+    expect(tester.getSize(affiche).width, 390);
   });
 
   testWidgets('le formulaire de connexion valide les champs', (tester) async {
@@ -39,10 +69,10 @@ void main() {
     await pumpApp(tester);
 
     await loginDemo(tester);
-    expect(find.textContaining('depuis un seul endroit'), findsOneWidget);
+    expect(find.textContaining('au même endroit'), findsOneWidget);
 
     await ouvrirOnglet(tester, 'Marché');
-    expect(find.text('Arachide décortiquée'), findsOneWidget);
+    expect(find.text('Aucune annonce ne correspond.'), findsOneWidget);
 
     await ouvrirMenu(tester);
     await appuyer(tester, const Key('menu-deconnexion'));
@@ -51,6 +81,8 @@ void main() {
 
   testWidgets('inscription : retour vers la connexion', (tester) async {
     await pumpApp(tester);
+    await tester.tap(find.byKey(const Key('welcome-login')));
+    await tester.pumpAndSettle();
     await appuyer(tester, const Key('login-inscription'));
 
     const champs = {
@@ -79,6 +111,6 @@ void main() {
     );
     await tester.tap(find.byKey(const Key('login-submit')));
     await tester.pumpAndSettle();
-    expect(find.textContaining('depuis un seul endroit'), findsOneWidget);
+    expect(find.textContaining('au même endroit'), findsOneWidget);
   });
 }

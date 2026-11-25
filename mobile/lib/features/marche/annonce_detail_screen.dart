@@ -113,10 +113,10 @@ class AnnonceDetailScreen extends StatelessWidget {
                   subtitle: Text(
                     [
                       if (aUnTelephone)
-                        '📞 ${formatTelephone(annonce.vendeurTelephone)}',
+                        formatTelephone(annonce.vendeurTelephone),
                       if (annonce.dateCreation != null)
                         'Publiée le ${formatDate(annonce.dateCreation)}',
-                    ].join(' · '),
+                    ].join('\n'),
                   ),
                 ),
                 if (!annonce.estProprietaire && aUnTelephone) ...[

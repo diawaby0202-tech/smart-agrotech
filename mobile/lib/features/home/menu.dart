@@ -6,6 +6,7 @@ import '../../core/design.dart';
 import '../../core/theme.dart';
 import '../auth/auth_provider.dart';
 import '../auth/profil_screen.dart';
+import '../auth/user.dart';
 
 /// Clé de l'écran principal, pour ouvrir le menu depuis n'importe quel onglet.
 final menuKey = GlobalKey<ScaffoldState>();
@@ -25,6 +26,8 @@ class BarreMarque extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final role = context.watch<AuthProvider>().user?.role;
+    final roleLimite = role == UserRole.acheteur;
     return AppBar(
       titleSpacing: 0,
       leading: IconButton(
@@ -35,31 +38,30 @@ class BarreMarque extends StatelessWidget implements PreferredSizeWidget {
       ),
       title: const NomMarque(),
       actions: [
-        IconButton(
-          key: const Key('profil'),
-          tooltip: 'Mon profil',
-          icon: const Icon(Icons.account_circle_outlined),
-          onPressed: () => ouvrirProfil(context),
-        ),
+        if (!roleLimite)
+          IconButton(
+            key: const Key('profil'),
+            tooltip: 'Mon profil',
+            icon: const Icon(Icons.account_circle_outlined),
+            onPressed: () => ouvrirProfil(context),
+          ),
       ],
     );
   }
 }
 
-/// Logo et nom « SmartAgroTech », comme l'en-tête du site.
+/// Logo et nom « Smart AgroTech ».
 class NomMarque extends StatelessWidget {
-  const NomMarque({super.key, this.taille = 34, this.clair = false});
+  const NomMarque({super.key, this.taille = 32, this.clair = false});
 
   final double taille;
 
-  /// Texte blanc, sur fond vert.
+  /// Texte clair, sur fond vert foncé.
   final bool clair;
 
   @override
   Widget build(BuildContext context) {
     final style = Theme.of(context).textTheme.titleLarge?.copyWith(
-      fontWeight: FontWeight.w800,
-      letterSpacing: -0.4,
       color: clair ? Colors.white : Couleurs.encre,
     );
     return Row(
@@ -72,18 +74,7 @@ class NomMarque extends StatelessWidget {
           child: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Smart', style: style),
-                clair
-                    ? Text(
-                        'AgroTech',
-                        style: style?.copyWith(color: Couleurs.vert100),
-                      )
-                    : TexteDegrade('AgroTech', style: style),
-              ],
-            ),
+            child: Text('Smart AgroTech', style: style),
           ),
         ),
       ],
@@ -98,11 +89,11 @@ class MenuPrincipal extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
   static const onglets = [
-    (emoji: '🏠', label: 'Accueil'),
-    (emoji: '🌾', label: 'Cultures'),
-    (emoji: '🐄', label: 'Élevage'),
-    (emoji: '⛅', label: 'Alertes météo'),
-    (emoji: '🛒', label: 'Marché'),
+    (branche: 0, icone: Icons.home_outlined, label: 'Accueil'),
+    (branche: 1, icone: Icons.grass, label: 'Cultures'),
+    (branche: 2, icone: Icons.pets_outlined, label: 'Élevage'),
+    (branche: 3, icone: Icons.cloud_outlined, label: 'Alertes météo'),
+    (branche: 4, icone: Icons.storefront_outlined, label: 'Marché'),
   ];
 
   @override
@@ -110,6 +101,10 @@ class MenuPrincipal extends StatelessWidget {
     final theme = Theme.of(context);
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
+    final roleLimite = user?.role == UserRole.acheteur;
+    final ongletsVisibles = onglets.where(
+      (onglet) => !roleLimite || onglet.branche >= 3,
+    );
 
     void fermerPuis(VoidCallback action) {
       Navigator.of(context).pop();
@@ -129,11 +124,11 @@ class MenuPrincipal extends StatelessWidget {
                 20,
                 20,
               ),
-              decoration: const BoxDecoration(gradient: Couleurs.degradeMarque),
+              color: Couleurs.vert800,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const NomMarque(taille: 40, clair: true),
+                  const NomMarque(taille: 36, clair: true),
                   const SizedBox(height: 16),
                   if (user != null) ...[
                     Text(
@@ -144,7 +139,7 @@ class MenuPrincipal extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${user.role.label} · ${user.email}',
+                      '${user.role.label}\n${user.email}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: Colors.white.withValues(alpha: 0.85),
                       ),
@@ -154,31 +149,34 @@ class MenuPrincipal extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            for (final (index, onglet) in onglets.indexed)
+            for (final onglet in ongletsVisibles)
               _LienMenu(
-                key: Key('menu-onglet-$index'),
-                emoji: onglet.emoji,
+                key: Key('menu-onglet-${onglet.branche}'),
+                icone: onglet.icone,
                 label: onglet.label,
-                actif: navigationShell.currentIndex == index,
-                onTap: () => fermerPuis(() => navigationShell.goBranch(index)),
+                actif: navigationShell.currentIndex == onglet.branche,
+                onTap: () =>
+                    fermerPuis(() => navigationShell.goBranch(onglet.branche)),
+              ),
+            const Divider(indent: 16, endIndent: 16),
+            if (!roleLimite)
+              _LienMenu(
+                key: const Key('menu-tableau-de-bord'),
+                icone: Icons.space_dashboard_outlined,
+                label: 'Tableau de bord',
+                onTap: () => fermerPuis(() => context.push('/tableau-de-bord')),
+              ),
+            if (!roleLimite)
+              _LienMenu(
+                key: const Key('menu-profil'),
+                icone: Icons.person_outline,
+                label: 'Mon profil',
+                onTap: () => fermerPuis(() => ouvrirProfil(context)),
               ),
             const Divider(indent: 16, endIndent: 16),
             _LienMenu(
-              key: const Key('menu-tableau-de-bord'),
-              emoji: '📊',
-              label: 'Tableau de bord',
-              onTap: () => fermerPuis(() => context.push('/tableau-de-bord')),
-            ),
-            _LienMenu(
-              key: const Key('menu-profil'),
-              emoji: '👤',
-              label: 'Mon profil',
-              onTap: () => fermerPuis(() => ouvrirProfil(context)),
-            ),
-            const Divider(indent: 16, endIndent: 16),
-            _LienMenu(
               key: const Key('menu-deconnexion'),
-              emoji: '🚪',
+              icone: Icons.logout,
               label: 'Déconnexion',
               couleur: Couleurs.danger,
               onTap: () => fermerPuis(auth.logout),
@@ -194,14 +192,14 @@ class MenuPrincipal extends StatelessWidget {
 class _LienMenu extends StatelessWidget {
   const _LienMenu({
     super.key,
-    required this.emoji,
+    required this.icone,
     required this.label,
     required this.onTap,
     this.actif = false,
     this.couleur,
   });
 
-  final String emoji;
+  final IconData icone;
   final String label;
   final VoidCallback onTap;
   final bool actif;
@@ -209,19 +207,23 @@ class _LienMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final teinte = couleur ?? (actif ? Couleurs.vert700 : Couleurs.encre);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 1),
       child: ListTile(
         onTap: onTap,
         selected: actif,
-        selectedTileColor: Couleurs.vert100,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        leading: Text(emoji, style: const TextStyle(fontSize: 22)),
+        selectedTileColor: Couleurs.vert50,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        leading: Icon(
+          icone,
+          color: couleur ?? (actif ? Couleurs.vert700 : Couleurs.ardoise500),
+        ),
         title: Text(
           label,
           style: TextStyle(
-            fontWeight: FontWeight.w700,
-            color: couleur ?? (actif ? Couleurs.vert700 : Couleurs.encre),
+            fontWeight: actif ? FontWeight.w700 : FontWeight.w600,
+            color: teinte,
           ),
         ),
       ),

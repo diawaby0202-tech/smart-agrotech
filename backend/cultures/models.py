@@ -23,6 +23,7 @@ class Parcelle(models.Model):
         max_length=20, choices=StatutParcelle.choices, default=StatutParcelle.PREPARATION
     )
     notes = models.TextField(blank=True)
+    image = models.ImageField(upload_to='parcelles/', blank=True, null=True)
     date_creation = models.DateTimeField(auto_now_add=True)
 
     class Meta:

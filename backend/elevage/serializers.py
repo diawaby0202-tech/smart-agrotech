@@ -8,9 +8,14 @@ class AnimalSerializer(serializers.ModelSerializer):
         model = Animal
         fields = [
             'id', 'espece', 'race', 'identifiant', 'effectif',
-            'date_naissance', 'notes', 'date_creation',
+            'date_naissance', 'notes', 'image', 'date_creation',
         ]
         read_only_fields = ['id', 'date_creation']
+
+    def validate_image(self, value):
+        if value.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError('La photo ne peut pas dépasser 5 Mo.')
+        return value
 
     def validate_effectif(self, value):
         if value < 1:

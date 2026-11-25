@@ -2,8 +2,8 @@ enum UserRole {
   producteur('producteur', 'Agriculteur / Éleveur'),
   acheteur('acheteur', 'Acheteur'),
 
-  /// Compte créé avec `createsuperuser` côté backend. Il se connecte comme les
-  /// autres ; l'espace d'administration reste sur le site web.
+  /// Compte créé avec `createsuperuser` côté backend. Il a accès aux modules
+  /// mobiles ; la console d'administration reste sur le site web.
   admin('admin', 'Administrateur');
 
   const UserRole(this.apiValue, this.label);

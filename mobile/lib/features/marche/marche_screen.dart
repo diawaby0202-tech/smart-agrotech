@@ -114,11 +114,11 @@ class _MarcheScreenState extends State<MarcheScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             children: [
               const BandeauModule(
-                icone: '🛒',
                 titre: 'Marché agricole',
                 texte:
-                    'Achetez et vendez des produits locaux, directement '
-                    'entre producteurs et acheteurs.',
+                    'Des produits d’ici, proposés directement par leurs '
+                    'producteurs.',
+                image: 'assets/img/marche.jpg',
               ),
               const SizedBox(height: 16),
               Row(
@@ -245,20 +245,23 @@ class _CarteAnnonce extends StatelessWidget {
       badgeHaut: annonce.zone.isEmpty
           ? null
           : Etiquette(
-              '📍 ${annonce.zone}',
+              annonce.zone,
               fond: Colors.white,
               couleur: Couleurs.encre,
             ),
       badgeBas: annonce.statut == StatutAnnonce.disponible
           ? null
-          : Etiquette(annonce.statut.label, fond: Couleurs.or500),
+          : Etiquette(
+              annonce.statut.label,
+              fond: Couleurs.or500,
+              couleur: Couleurs.encre,
+            ),
       children: [
         Text(
-          annonce.categorie.label.toUpperCase(),
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: Couleurs.vert600,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.8,
+          annonce.categorie.label,
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: Couleurs.or600,
+            fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 4),
@@ -266,19 +269,27 @@ class _CarteAnnonce extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           formatPrix(annonce.prix),
-          style: theme.textTheme.titleLarge?.copyWith(color: Couleurs.vert600),
+          style: theme.textTheme.titleLarge?.copyWith(color: Couleurs.vert700),
         ),
         if (annonce.quantite.isNotEmpty)
-          LigneInfo('📦', 'Quantité : ${annonce.quantite}'),
-        if (annonce.vendeurNom.isNotEmpty) LigneInfo('👤', annonce.vendeurNom),
+          LigneInfo(
+            Icons.inventory_2_outlined,
+            'Quantité : ${annonce.quantite}',
+          ),
+        if (annonce.vendeurNom.isNotEmpty)
+          LigneInfo(Icons.person_outline, annonce.vendeurNom),
         if (annonce.vendeurTelephone.isNotEmpty)
-          LigneInfo('📞', formatTelephone(annonce.vendeurTelephone)),
+          LigneInfo(
+            Icons.call_outlined,
+            formatTelephone(annonce.vendeurTelephone),
+          ),
         const SizedBox(height: 12),
         if (annonce.estProprietaire)
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
               BoutonCarte('Modifier', onPressed: onModifier),
-              const SizedBox(width: 8),
               BoutonCarte('Supprimer', danger: true, onPressed: onSupprimer),
             ],
           )

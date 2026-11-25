@@ -99,8 +99,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Couleurs.vert50,
-      appBar: AppBar(backgroundColor: Couleurs.vert50),
+      appBar: AppBar(),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -122,7 +121,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Rejoignez la plateforme Smart AgroTech Sénégal.',
+                        'Quelques informations pour retrouver vos cultures, '
+                        'votre élevage ou vos ventes au même endroit.',
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodyLarge?.copyWith(
                           color: Couleurs.ardoise500,
