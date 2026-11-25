@@ -45,6 +45,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: any
+  google_fonts: ^8.2.1
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +68,10 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # Photos reprises du site web (frontend/src/assets/img).
+  assets:
+    - assets/img/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

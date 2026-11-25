@@ -5,20 +5,23 @@ import '../features/alertes/meteo_screen.dart';
 import '../features/auth/auth_provider.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
+import '../features/auth/user.dart';
+import '../features/auth/welcome_screen.dart';
 import '../features/cultures/cultures_screen.dart';
 import '../features/elevage/elevage_screen.dart';
+import '../features/home/accueil_screen.dart';
 import '../features/home/dashboard_screen.dart';
 import '../features/home/home_shell.dart';
 import '../features/marche/marche_screen.dart';
 
-const _publicRoutes = {'/connexion', '/inscription'};
+const _publicRoutes = {'/bienvenue', '/connexion', '/inscription'};
 
 /// Routes de l'application. La redirection dépend de l'état de connexion :
 /// un visiteur est renvoyé vers `/connexion`, un utilisateur connecté vers
 /// l'accueil.
 GoRouter createRouter(AuthProvider auth) {
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: '/bienvenue',
     refreshListenable: auth,
     redirect: (context, state) {
       final location = state.matchedLocation;
@@ -26,14 +29,27 @@ GoRouter createRouter(AuthProvider auth) {
         case AuthStatus.unknown:
           return location == '/demarrage' ? null : '/demarrage';
         case AuthStatus.unauthenticated:
-          return _publicRoutes.contains(location) ? null : '/connexion';
+          return _publicRoutes.contains(location) ? null : '/bienvenue';
         case AuthStatus.authenticated:
           final onPublicPage =
               _publicRoutes.contains(location) || location == '/demarrage';
-          return onPublicPage ? '/' : null;
+          if (onPublicPage) return '/tableau-de-bord';
+          final role = auth.user?.role;
+          final roleLimite = role == UserRole.acheteur;
+          if (roleLimite &&
+              (location == '/' ||
+                  location == '/cultures' ||
+                  location == '/elevage')) {
+            return '/tableau-de-bord';
+          }
+          return null;
       }
     },
     routes: [
+      GoRoute(
+        path: '/bienvenue',
+        builder: (context, state) => const WelcomeScreen(),
+      ),
       GoRoute(
         path: '/demarrage',
         builder: (context, state) =>
@@ -47,11 +63,15 @@ GoRouter createRouter(AuthProvider auth) {
         path: '/inscription',
         builder: (context, state) => const RegisterScreen(),
       ),
+      GoRoute(
+        path: '/tableau-de-bord',
+        builder: (context, state) => const DashboardScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             HomeShell(navigationShell: navigationShell),
         branches: [
-          _branch('/', const DashboardScreen()),
+          _branch('/', const AccueilScreen()),
           _branch('/cultures', const CulturesScreen()),
           _branch('/elevage', const ElevageScreen()),
           _branch('/meteo', const MeteoScreen()),

@@ -8,9 +8,14 @@ class ParcelleSerializer(serializers.ModelSerializer):
         model = Parcelle
         fields = [
             'id', 'nom', 'culture', 'superficie', 'localisation', 'date_semis',
-            'date_recolte_prevue', 'statut', 'notes', 'date_creation',
+            'date_recolte_prevue', 'statut', 'notes', 'image', 'date_creation',
         ]
         read_only_fields = ['id', 'date_creation']
+
+    def validate_image(self, value):
+        if value.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError('La photo ne peut pas dépasser 5 Mo.')
+        return value
 
     def validate(self, data):
         semis = data.get('date_semis', getattr(self.instance, 'date_semis', None))

@@ -1,7 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart' as picker;
 import 'package:provider/provider.dart';
 
 import '../../core/api_exception.dart';
+import '../../core/design.dart';
+import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../auth/validators.dart';
 import 'elevage_models.dart';
@@ -12,6 +17,13 @@ import 'elevage_repository.dart';
 /// Renvoie l'[Animal] enregistré, ou `true` s'il a été supprimé.
 class AnimalFormScreen extends StatefulWidget {
   const AnimalFormScreen({super.key, this.animal});
+
+  static Future<picker.XFile?> Function() choisirImage = () =>
+      picker.ImagePicker().pickImage(
+        source: picker.ImageSource.gallery,
+        maxWidth: 1600,
+        imageQuality: 80,
+      );
 
   final Animal? animal;
 
@@ -31,6 +43,8 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
   );
   late final _notes = TextEditingController(text: widget.animal?.notes);
   late DateTime? _dateNaissance = widget.animal?.dateNaissance;
+  picker.XFile? _photo;
+  Uint8List? _apercu;
 
   bool _loading = false;
   String? _error;
@@ -54,6 +68,21 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
     return _serverErrors['effectif'];
   }
 
+  Future<void> _choisirPhoto() async {
+    try {
+      final photo = await AnimalFormScreen.choisirImage();
+      if (photo == null) return;
+      final apercu = await photo.readAsBytes();
+      if (!mounted) return;
+      setState(() {
+        _photo = photo;
+        _apercu = apercu;
+      });
+    } on Exception {
+      if (mounted) showMessage(context, 'Impossible d\'ouvrir la galerie.');
+    }
+  }
+
   Future<void> _submit() async {
     setState(() {
       _serverErrors = const {};
@@ -69,14 +98,15 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
       effectif: int.parse(_effectif.text.trim()),
       dateNaissance: _dateNaissance,
       notes: _notes.text.trim(),
+      image: _photo?.path ?? widget.animal?.image,
     );
 
     setState(() => _loading = true);
     final repository = context.read<ElevageRepository>();
     try {
       final saved = await (_isEdit
-          ? repository.updateAnimal(animal)
-          : repository.createAnimal(animal));
+          ? repository.updateAnimal(animal, imagePath: _photo?.path)
+          : repository.createAnimal(animal, imagePath: _photo?.path));
       if (!mounted) return;
       Navigator.of(context).pop<Object>(_isEdit ? saved : true);
     } on ApiException catch (e) {
@@ -125,6 +155,23 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
         key: _formKey,
         child: FormBody(
           children: [
+            Encadre(
+              icone: Icons.pets_outlined,
+              texte: _isEdit
+                  ? 'Actualisez les informations de cet animal ou de ce lot.'
+                  : 'Notez les informations utiles pour garder un œil sur votre élevage.',
+              fond: Couleurs.vert50,
+              couleur: Couleurs.vert700,
+            ),
+            const SizedBox(height: 16),
+            PhotoField(
+              buttonKey: const Key('animal-choisir-photo'),
+              label: 'Photo de l\'animal ou du lot (facultatif)',
+              image: widget.animal?.image,
+              preview: _apercu,
+              onChoose: _choisirPhoto,
+            ),
+            const SizedBox(height: 16),
             TextFormField(
               key: const Key('animal-espece'),
               controller: _espece,

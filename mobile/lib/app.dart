@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'core/notification_service.dart';
 import 'core/router.dart';
 import 'core/services.dart';
+import 'core/theme.dart';
 import 'features/alertes/alertes_repository.dart';
 import 'features/auth/auth_provider.dart';
 import 'features/cultures/parcelle_repository.dart';
@@ -73,17 +74,7 @@ class _SmartAgroTechAppState extends State<SmartAgroTechApp> {
         locale: const Locale('fr'),
         supportedLocales: const [Locale('fr')],
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2E7D32)),
-          inputDecorationTheme: const InputDecorationTheme(
-            border: OutlineInputBorder(),
-          ),
-          filledButtonTheme: FilledButtonThemeData(
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(48),
-            ),
-          ),
-        ),
+        theme: AppTheme.clair(),
       ),
     );
   }

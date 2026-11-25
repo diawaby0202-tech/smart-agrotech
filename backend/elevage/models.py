@@ -12,6 +12,7 @@ class Animal(models.Model):
     effectif = models.PositiveIntegerField(default=1, help_text='1 = animal seul, >1 = lot')
     date_naissance = models.DateField(null=True, blank=True)
     notes = models.TextField(blank=True)
+    image = models.ImageField(upload_to='animaux/', blank=True, null=True)
     date_creation = models.DateTimeField(auto_now_add=True)
 
     class Meta:

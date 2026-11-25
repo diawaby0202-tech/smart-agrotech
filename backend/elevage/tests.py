@@ -1,7 +1,11 @@
+from io import BytesIO
+import tempfile
 from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
+from PIL import Image
 
 from .models import Animal, SuiviSanitaire
 
@@ -27,6 +31,23 @@ class ElevageTests(APITestCase):
         r = self.client.post('/api/animaux/', {'espece': 'Ovin', 'effectif': 10})
         self.assertEqual(r.status_code, 201)
         self.assertEqual(Animal.objects.get(id=r.json()['id']).proprietaire, self.u1)
+
+    def test_creation_animal_avec_photo(self):
+        image = BytesIO()
+        Image.new('RGB', (2, 2), 'green').save(image, 'PNG')
+        photo = SimpleUploadedFile('animal.png', image.getvalue(), content_type='image/png')
+        self.client.force_authenticate(self.u1)
+
+        with tempfile.TemporaryDirectory() as media_root:
+            with self.settings(MEDIA_ROOT=media_root):
+                response = self.client.post(
+                    '/api/animaux/',
+                    {'espece': 'Ovin', 'effectif': 1, 'image': photo},
+                    format='multipart',
+                )
+                self.assertEqual(response.status_code, 201)
+                self.assertIn('/media/animaux/', response.json()['image'])
+                self.assertTrue(Animal.objects.get(id=response.json()['id']).image)
 
     def test_effectif_invalide(self):
         self.client.force_authenticate(self.u1)

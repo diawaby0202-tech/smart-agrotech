@@ -29,6 +29,7 @@ class Parcelle {
     this.dateRecoltePrevue,
     this.statut = StatutParcelle.preparation,
     this.notes = '',
+    this.image,
   });
 
   /// `null` tant que la parcelle n'est pas enregistrée.
@@ -43,6 +44,7 @@ class Parcelle {
   final DateTime? dateRecoltePrevue;
   final StatutParcelle statut;
   final String notes;
+  final String? image;
 
   factory Parcelle.fromJson(Map<String, dynamic> json) => Parcelle(
     id: json['id'] as int?,
@@ -54,6 +56,7 @@ class Parcelle {
     dateRecoltePrevue: parseDate(json['date_recolte_prevue']),
     statut: StatutParcelle.fromApi(json['statut']),
     notes: json['notes'] as String? ?? '',
+    image: json['image'] as String?,
   );
 
   Map<String, dynamic> toJson() => {
@@ -67,15 +70,17 @@ class Parcelle {
     'notes': notes,
   };
 
-  Parcelle copyWith({int? id, StatutParcelle? statut}) => Parcelle(
-    id: id ?? this.id,
-    nom: nom,
-    culture: culture,
-    superficie: superficie,
-    localisation: localisation,
-    dateSemis: dateSemis,
-    dateRecoltePrevue: dateRecoltePrevue,
-    statut: statut ?? this.statut,
-    notes: notes,
-  );
+  Parcelle copyWith({int? id, StatutParcelle? statut, String? image}) =>
+      Parcelle(
+        id: id ?? this.id,
+        nom: nom,
+        culture: culture,
+        superficie: superficie,
+        localisation: localisation,
+        dateSemis: dateSemis,
+        dateRecoltePrevue: dateRecoltePrevue,
+        statut: statut ?? this.statut,
+        notes: notes,
+        image: image ?? this.image,
+      );
 }

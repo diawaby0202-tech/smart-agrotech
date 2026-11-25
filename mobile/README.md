@@ -12,7 +12,13 @@ flutter pub get
 flutter run
 ```
 
-Par défaut l'app tourne en **mode démo** (données fictives, aucun backend nécessaire).
+Par défaut l'app se connecte au backend Django.
+Pour travailler hors connexion avec les données fictives :
+
+```bash
+flutter run --dart-define=USE_MOCK=true
+```
+
 Compte de démonstration : `demo@agrotech.sn` / `demo1234`. Les comptes créés depuis l'écran d'inscription restent en mémoire jusqu'au redémarrage de l'app.
 
 ### Brancher la vraie API (à utiliser pour la soutenance)
@@ -23,7 +29,7 @@ Pour montrer l'application avec les vraies données, et non les données fictive
 
    ```bash
    cd backend
-   venv\Scripts\python manage.py runserver
+   venv\Scripts\python manage.py runserver 0.0.0.0:8000
    ```
 
 2. Démarrer l'émulateur Android, puis dans un second terminal :
@@ -39,7 +45,7 @@ Cette commande suppose que `10.0.2.2` figure dans `ALLOWED_HOSTS` côté backend
 
 | Variable | Valeur par défaut | Rôle |
 |---|---|---|
-| `USE_MOCK` | `true` | `false` pour appeler l'API Django |
+| `USE_MOCK` | `false` | `true` pour utiliser les données fictives |
 | `API_BASE_URL` | `http://10.0.2.2:8000/api` | URL de l'API (`10.0.2.2` = `localhost` du PC vu depuis l'émulateur Android) |
 
 Sur un vrai téléphone, remplacer par l'adresse IP du PC sur le réseau local :
@@ -113,3 +119,18 @@ Django refuse (erreur 400) les requêtes envoyées à `10.0.2.2` tant que cette 
 adb reverse tcp:8000 tcp:8000
 flutter run --dart-define=USE_MOCK=false --dart-define=API_BASE_URL=http://localhost:8000/api
 ```
+
+### Ajouter des fiches d'exemple avec les photos
+
+Pour remplir Cultures et Élevage avec des exemples visibles dans l'application,
+lancer cette commande depuis `backend` en remplaçant l'adresse par celle du
+compte Flutter. Elle ajoute trois parcelles, trois animaux et deux suivis, sans
+modifier ni supprimer les fiches existantes :
+
+```bash
+venv\Scripts\python manage.py ajouter_donnees_exemple --email votre@email.sn
+```
+
+Les photos locales sont choisies par l'application selon la culture ou l'espèce
+(arachide, mil, maïs, bovin, ovin et caprin). Les fiches ajoutées sont identifiées
+comme des exemples et peuvent être modifiées ou supprimées depuis l'application.

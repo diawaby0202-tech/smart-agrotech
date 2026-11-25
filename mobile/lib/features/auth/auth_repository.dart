@@ -15,6 +15,13 @@ abstract class AuthRepository {
   /// Retourne l'utilisateur si un token valide est déjà enregistré.
   Future<User?> restoreSession();
 
+  /// Modifie le prénom, le nom et le téléphone (RF-05).
+  Future<User> updateProfile({
+    required String prenom,
+    required String nom,
+    required String telephone,
+  });
+
   Future<void> logout();
 }
 
@@ -79,6 +86,19 @@ class ApiAuthRepository implements AuthRepository {
     }
     await _storage.clear();
   }
+
+  @override
+  Future<User> updateProfile({
+    required String prenom,
+    required String nom,
+    required String telephone,
+  }) => _client.call((dio) async {
+    final response = await dio.patch(
+      '/users/me/',
+      data: {'prenom': prenom, 'nom': nom, 'telephone': telephone},
+    );
+    return User.fromJson(Map<String, dynamic>.from(response.data as Map));
+  });
 
   Future<User> _fetchProfile() async {
     final response = await _client.dio.get('/users/me/');

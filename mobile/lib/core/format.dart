@@ -15,6 +15,52 @@ DateTime? parseDate(Object? value) =>
 String formatDate(DateTime? date) =>
     date == null ? '—' : '${_deux(date.day)}/${_deux(date.month)}/${date.year}';
 
+const _mois = [
+  'janvier',
+  'février',
+  'mars',
+  'avril',
+  'mai',
+  'juin',
+  'juillet',
+  'août',
+  'septembre',
+  'octobre',
+  'novembre',
+  'décembre',
+];
+
+/// Date en toutes lettres, comme sur le site : `26 juillet 2026`.
+String formatDateLongue(DateTime? date, {bool annee = true}) {
+  if (date == null) return 'Non renseignée';
+  final texte = '${date.day} ${_mois[date.month - 1]}';
+  return annee ? '$texte ${date.year}' : texte;
+}
+
+/// Date courte : `19 oct.`
+String formatDateCourte(DateTime date) {
+  final mois = _mois[date.month - 1];
+  return '${date.day} ${mois.length > 4 ? '${mois.substring(0, 3)}.' : mois}';
+}
+
+const _jours = [
+  'Lundi',
+  'Mardi',
+  'Mercredi',
+  'Jeudi',
+  'Vendredi',
+  'Samedi',
+  'Dimanche',
+];
+
+/// « Aujourd'hui », « Demain », puis le nom du jour.
+String nomJour(DateTime date) {
+  final ecart = joursRestants(date);
+  if (ecart == 0) return "Aujourd'hui";
+  if (ecart == 1) return 'Demain';
+  return _jours[date.weekday - 1];
+}
+
 /// DRF renvoie les nombres décimaux sous forme de texte (`"2.50"`).
 double parseDouble(Object? value) =>
     value is num ? value.toDouble() : double.tryParse('$value') ?? 0;
@@ -32,6 +78,22 @@ String formatPrix(int prix) {
     buffer.write(chiffres[i]);
   }
   return '$buffer FCFA';
+}
+
+/// Numéro lisible : `771234567` devient `77 123 45 67`.
+String formatTelephone(String numero) {
+  var chiffres = numero.replaceAll(RegExp(r'[^0-9+]'), '');
+  var prefixe = '';
+  if (chiffres.startsWith('+221')) {
+    prefixe = '+221 ';
+    chiffres = chiffres.substring(4);
+  } else if (chiffres.startsWith('221') && chiffres.length == 12) {
+    prefixe = '+221 ';
+    chiffres = chiffres.substring(3);
+  }
+  if (chiffres.length != 9) return numero;
+  return '$prefixe${chiffres.substring(0, 2)} ${chiffres.substring(2, 5)} '
+      '${chiffres.substring(5, 7)} ${chiffres.substring(7)}';
 }
 
 /// Nombre de jours entre aujourd'hui et [date] (négatif si la date est passée).
