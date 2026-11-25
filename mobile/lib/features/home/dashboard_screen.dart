@@ -229,6 +229,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 );
               },
             ),
+            if (role == UserRole.admin) ...[
+              const SizedBox(height: 12),
+              Card(
+                child: ListTile(
+                  key: const Key('dashboard-moderation-annonces'),
+                  leading: const CircleAvatar(
+                    backgroundColor: Couleurs.vert100,
+                    foregroundColor: Couleurs.vert700,
+                    child: Icon(Icons.fact_check_outlined),
+                  ),
+                  title: const Text('Modération des annonces'),
+                  subtitle: const Text(
+                    'Approuver, masquer ou restaurer une annonce',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/admin/annonces'),
+                ),
+              ),
+            ],
             if (accesComplet) ...[
               const SizedBox(height: 12),
               Card(

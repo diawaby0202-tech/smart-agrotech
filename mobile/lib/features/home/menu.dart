@@ -173,6 +173,15 @@ class MenuPrincipal extends StatelessWidget {
                 label: 'Mon profil',
                 onTap: () => fermerPuis(() => ouvrirProfil(context)),
               ),
+            if (user?.role == UserRole.admin)
+              _LienMenu(
+                key: const Key('menu-moderation-annonces'),
+                icone: Icons.fact_check_outlined,
+                label: 'Modération des annonces',
+                onTap: () => fermerPuis(
+                  () => context.push('/admin/annonces'),
+                ),
+              ),
             const Divider(indent: 16, endIndent: 16),
             _LienMenu(
               key: const Key('menu-deconnexion'),

@@ -10,6 +10,7 @@ import 'animal_form_screen.dart';
 import 'elevage_models.dart';
 import 'elevage_repository.dart';
 import 'suivi_form_screen.dart';
+import 'suivi_reproduction_screen.dart';
 
 /// Fiche d'un animal ou d'un lot, avec son historique sanitaire (RF-11).
 class AnimalDetailScreen extends StatefulWidget {
@@ -43,6 +44,14 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       MaterialPageRoute(builder: (_) => SuiviFormScreen(animal: _animal)),
     );
     if (changed == true) _suivisKey.currentState?.reload();
+  }
+
+  Future<void> _ouvrirReproduction() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => SuiviReproductionScreen(animal: _animal),
+      ),
+    );
   }
 
   Future<void> _deleteSuivi(SuiviSanitaire suivi) async {
@@ -113,6 +122,23 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
                   _Info('Naissance', formatDate(_animal.dateNaissance)),
                 if (_animal.notes.isNotEmpty) _Info('Notes', _animal.notes),
               ],
+            ),
+            const SizedBox(height: 12),
+            Card(
+              child: ListTile(
+                key: const Key('animal-suivi-reproduction'),
+                leading: const CircleAvatar(
+                  backgroundColor: Couleurs.vert100,
+                  foregroundColor: Couleurs.vert700,
+                  child: Icon(Icons.pregnant_woman),
+                ),
+                title: const Text('Suivi de reproduction'),
+                subtitle: const Text(
+                  'Saillies, mises bas prévues et petits nés',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: _ouvrirReproduction,
+              ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),

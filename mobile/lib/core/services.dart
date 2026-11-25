@@ -5,6 +5,7 @@ import '../features/auth/mock_auth_repository.dart';
 import '../features/cultures/parcelle_repository.dart';
 import '../features/elevage/elevage_repository.dart';
 import '../features/marche/annonce_repository.dart';
+import '../features/marche/annonce_moderation_repository.dart';
 import 'api_client.dart';
 import 'notification_service.dart';
 import 'token_storage.dart';
@@ -20,6 +21,7 @@ class AppServices {
     required this.elevage,
     required this.alertes,
     required this.annonces,
+    required this.annoncesModerees,
     required this.rappels,
   });
 
@@ -50,6 +52,9 @@ class AppServices {
       annonces: useMock
           ? MockAnnonceRepository()
           : ApiAnnonceRepository(client),
+      annoncesModerees: useMock
+          ? MockAnnonceModerationRepository()
+          : ApiAnnonceModerationRepository(client),
       rappels: RappelService(alertes, notifier),
     );
   }
@@ -59,5 +64,6 @@ class AppServices {
   final ElevageRepository elevage;
   final AlertesRepository alertes;
   final AnnonceRepository annonces;
+  final AnnonceModerationRepository annoncesModerees;
   final RappelService rappels;
 }

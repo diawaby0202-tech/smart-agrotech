@@ -7,7 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 from PIL import Image
 
-from .models import Animal, SuiviSanitaire
+from .models import Animal, SuiviReproduction, SuiviSanitaire
 
 User = get_user_model()
 
@@ -97,3 +97,53 @@ class ElevageTests(APITestCase):
         self.client.force_authenticate(self.u1)
         r = self.client.get(f'/api/suivis-sanitaires/?animal={autre.id}')
         self.assertEqual(len(r.json()), 1)
+
+
+class SuiviReproductionTests(APITestCase):
+    def setUp(self):
+        self.user = creer('reproduction-a@x.com')
+        self.autre = creer('reproduction-b@x.com')
+        self.animal = Animal.objects.create(
+            proprietaire=self.user,
+            espece='Bovin',
+            identifiant='V-01',
+        )
+        self.url = '/api/suivis-reproduction/'
+        self.data = {
+            'animal': self.animal.id,
+            'date_saillie': '2026-01-10',
+            'mise_bas_prevue': '2026-10-10',
+            'mise_bas_reelle': '2026-10-08',
+            'nombre_petits': 1,
+            'notes': 'Mise bas sans complication',
+        }
+
+    def test_creation_et_filtre_par_animal(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(self.url, self.data)
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['nombre_petits'], 1)
+        self.assertEqual(
+            len(self.client.get(f'{self.url}?animal={self.animal.id}').json()),
+            1,
+        )
+
+    def test_refuse_animal_d_un_autre_utilisateur(self):
+        self.client.force_authenticate(self.autre)
+
+        response = self.client.post(self.url, self.data)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(SuiviReproduction.objects.count(), 0)
+
+    def test_refuse_dates_incoherentes(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(
+            self.url,
+            {**self.data, 'mise_bas_prevue': '2026-01-01'},
+        )
+
+        self.assertEqual(response.status_code, 400)

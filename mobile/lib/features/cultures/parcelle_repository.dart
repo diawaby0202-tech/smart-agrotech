@@ -3,12 +3,16 @@ import 'package:dio/dio.dart';
 import '../../core/api_client.dart';
 import '../../core/api_exception.dart';
 import 'parcelle.dart';
+import 'recolte.dart';
 
 abstract class ParcelleRepository {
   Future<List<Parcelle>> list();
 
   /// Parcelles non récoltées, triées par date de récolte prévue (RF-08).
   Future<List<Parcelle>> calendrier();
+  Future<List<Recolte>> recoltes(int parcelleId);
+  Future<Recolte> createRecolte(Recolte recolte);
+  Future<void> deleteRecolte(int id);
 
   Future<Parcelle> create(Parcelle parcelle, {String? imagePath});
   Future<Parcelle> update(Parcelle parcelle, {String? imagePath});
@@ -19,6 +23,7 @@ class ApiParcelleRepository implements ParcelleRepository {
   ApiParcelleRepository(this._client);
 
   static const _path = '/parcelles/';
+  static const _recoltesPath = '/recoltes/';
   final ApiClient _client;
 
   List<Parcelle> _parse(Object? data) => [
@@ -42,6 +47,31 @@ class ApiParcelleRepository implements ParcelleRepository {
   Future<List<Parcelle>> calendrier() => _client.call(
     (dio) async => _parse((await dio.get('${_path}calendrier/')).data),
   );
+
+  @override
+  Future<List<Recolte>> recoltes(int parcelleId) => _client.call(
+    (dio) async => [
+      for (final item
+          in (await dio.get(
+            _recoltesPath,
+            queryParameters: {'parcelle': parcelleId},
+          )).data as List)
+        Recolte.fromJson(Map<String, dynamic>.from(item as Map)),
+    ],
+  );
+
+  @override
+  Future<Recolte> createRecolte(Recolte recolte) => _client.call(
+    (dio) async => Recolte.fromJson(
+      Map<String, dynamic>.from(
+        (await dio.post(_recoltesPath, data: recolte.toJson())).data as Map,
+      ),
+    ),
+  );
+
+  @override
+  Future<void> deleteRecolte(int id) =>
+      _client.call((dio) => dio.delete('$_recoltesPath$id/'));
 
   @override
   Future<Parcelle> create(Parcelle parcelle, {String? imagePath}) =>
@@ -109,7 +139,9 @@ class MockParcelleRepository implements ParcelleRepository {
   }
 
   final List<Parcelle> _parcelles = [];
+  final List<Recolte> _recoltes = [];
   int _nextId = 4;
+  int _nextRecolteId = 1;
 
   void _valider(Parcelle p) {
     if (p.superficie <= 0) {
@@ -140,6 +172,25 @@ class MockParcelleRepository implements ParcelleRepository {
         ..sort((a, b) => a.dateRecoltePrevue!.compareTo(b.dateRecoltePrevue!));
 
   @override
+  Future<List<Recolte>> recoltes(int parcelleId) async =>
+      _recoltes.where((recolte) => recolte.parcelleId == parcelleId).toList()
+        ..sort((a, b) => b.date.compareTo(a.date));
+
+  @override
+  Future<Recolte> createRecolte(Recolte recolte) async {
+    if (recolte.quantite <= 0) {
+      throw ApiException('La quantité récoltée doit être supérieure à zéro.');
+    }
+    final created = recolte.copyWith(id: _nextRecolteId++);
+    _recoltes.add(created);
+    return created;
+  }
+
+  @override
+  Future<void> deleteRecolte(int id) async =>
+      _recoltes.removeWhere((recolte) => recolte.id == id);
+
+  @override
   Future<Parcelle> create(Parcelle parcelle, {String? imagePath}) async {
     _valider(parcelle);
     final created = parcelle.copyWith(id: _nextId++);
@@ -157,6 +208,8 @@ class MockParcelleRepository implements ParcelleRepository {
   }
 
   @override
-  Future<void> delete(int id) async =>
-      _parcelles.removeWhere((p) => p.id == id);
+  Future<void> delete(int id) async {
+    _parcelles.removeWhere((p) => p.id == id);
+    _recoltes.removeWhere((recolte) => recolte.parcelleId == id);
+  }
 }

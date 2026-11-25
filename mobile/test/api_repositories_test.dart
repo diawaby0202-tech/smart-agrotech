@@ -10,10 +10,13 @@ import 'package:smart_agrotech/features/alertes/alertes_models.dart';
 import 'package:smart_agrotech/features/alertes/alertes_repository.dart';
 import 'package:smart_agrotech/features/cultures/parcelle.dart';
 import 'package:smart_agrotech/features/cultures/parcelle_repository.dart';
+import 'package:smart_agrotech/features/cultures/recolte.dart';
 import 'package:smart_agrotech/features/elevage/elevage_models.dart';
 import 'package:smart_agrotech/features/elevage/elevage_repository.dart';
 import 'package:smart_agrotech/features/marche/annonce.dart';
 import 'package:smart_agrotech/features/marche/annonce_repository.dart';
+import 'package:smart_agrotech/features/marche/annonce_moderation.dart';
+import 'package:smart_agrotech/features/marche/annonce_moderation_repository.dart';
 
 import 'api_client_test.dart' show FakeAdapter;
 
@@ -59,6 +62,53 @@ void main() {
     expect(parcelle.dateSemis, DateTime(2026, 7, 1));
     expect(parcelle.dateRecoltePrevue, isNull);
     expect(parcelle.statut, StatutParcelle.croissance);
+  });
+
+  test('récoltes : filtre, création et date relue', () async {
+    final repository = ApiParcelleRepository(
+      client(
+        (options) => options.method == 'GET'
+            ? (
+                200,
+                [
+                  {
+                    'id': 12,
+                    'parcelle': 7,
+                    'date': '2026-10-14',
+                    'quantite': '125.50',
+                    'unite': 'kg',
+                    'notes': 'Première récolte',
+                  },
+                ],
+              )
+            : (
+                201,
+                {...options.data as Map, 'id': 13},
+              ),
+      ),
+    );
+
+    final recolte = (await repository.recoltes(7)).single;
+    expect(adapter.requests.last.queryParameters, {'parcelle': 7});
+    expect(recolte.quantite, 125.5);
+    expect(recolte.date, DateTime(2026, 10, 14));
+
+    await repository.createRecolte(
+      Recolte(
+        parcelleId: 7,
+        date: DateTime(2026, 10, 15),
+        quantite: 75,
+        unite: UniteRecolte.sac,
+      ),
+    );
+    expect(adapter.requests.last.path, '/recoltes/');
+    expect(corps(), {
+      'parcelle': 7,
+      'date': '2026-10-15',
+      'quantite': '75.00',
+      'unite': 'sac',
+      'notes': '',
+    });
   });
 
   test('parcelles : format envoyé à la création', () async {
@@ -182,6 +232,95 @@ void main() {
 
     await repository.suivis(5);
     expect(adapter.requests.last.queryParameters, {'animal': 5});
+  });
+
+  test('élevage : suivi de reproduction filtré par animal', () async {
+    final repository = ApiElevageRepository(
+      client(
+        (options) => options.method == 'GET'
+            ? (
+                200,
+                [
+                  {
+                    'id': 4,
+                    'animal': 5,
+                    'date_saillie': '2026-01-10',
+                    'mise_bas_prevue': '2026-10-10',
+                    'mise_bas_reelle': null,
+                    'nombre_petits': null,
+                    'notes': '',
+                  },
+                ],
+              )
+            : (
+                201,
+                {...options.data as Map, 'id': 5},
+              ),
+      ),
+    );
+
+    final suivi = (await repository.reproductions(5)).single;
+    expect(adapter.requests.last.queryParameters, {'animal': 5});
+    expect(suivi.dateSaillie, DateTime(2026, 1, 10));
+    expect(suivi.miseBasPrevue, DateTime(2026, 10, 10));
+
+    await repository.createReproduction(
+      SuiviReproduction(
+        animalId: 5,
+        dateSaillie: DateTime(2026, 1, 10),
+        miseBasPrevue: DateTime(2026, 10, 10),
+      ),
+    );
+    expect(adapter.requests.last.path, '/suivis-reproduction/');
+    expect(corps(), {
+      'animal': 5,
+      'date_saillie': '2026-01-10',
+      'mise_bas_prevue': '2026-10-10',
+      'mise_bas_reelle': null,
+      'nombre_petits': null,
+      'notes': '',
+    });
+  });
+
+  test('modération : chargement filtré, masquage et restauration', () async {
+    final repository = ApiAnnonceModerationRepository(
+      client(
+        (options) => options.method == 'GET'
+            ? (
+                200,
+                [
+                  {
+                    'id': 3,
+                    'titre': 'Mil',
+                    'description': '',
+                    'categorie': 'cereales',
+                    'prix': '10000',
+                    'zone': 'Thiès',
+                    'statut': 'disponible',
+                    'moderation': 'supprimee',
+                    'vendeur_email': 'vendeur@example.sn',
+                    'date_creation': '2026-10-14T12:00:00Z',
+                  },
+                ],
+              )
+            : (200, <String, Object>{}),
+      ),
+    );
+
+    final annonce = (await repository.list(
+      moderation: ModerationAnnonce.supprimee,
+      recherche: 'Mil',
+    )).single;
+    expect(adapter.requests.last.queryParameters, {
+      'moderation': 'supprimee',
+      'q': 'Mil',
+    });
+    expect(annonce.vendeurEmail, 'vendeur@example.sn');
+
+    await repository.masquer(annonce.id);
+    expect(adapter.requests.last.path, '/admin/annonces/3/masquer/');
+    await repository.restaurer(annonce.id);
+    expect(adapter.requests.last.path, '/admin/annonces/3/restaurer/');
   });
 
   test('élevage : photo envoyée en multipart et URL relue', () async {

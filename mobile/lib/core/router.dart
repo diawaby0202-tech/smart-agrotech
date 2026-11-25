@@ -13,6 +13,7 @@ import '../features/home/accueil_screen.dart';
 import '../features/home/dashboard_screen.dart';
 import '../features/home/home_shell.dart';
 import '../features/marche/marche_screen.dart';
+import '../features/marche/annonce_moderation_screen.dart';
 
 const _publicRoutes = {'/bienvenue', '/connexion', '/inscription'};
 
@@ -35,6 +36,9 @@ GoRouter createRouter(AuthProvider auth) {
               _publicRoutes.contains(location) || location == '/demarrage';
           if (onPublicPage) return '/tableau-de-bord';
           final role = auth.user?.role;
+          if (location == '/admin/annonces' && role != UserRole.admin) {
+            return '/tableau-de-bord';
+          }
           final roleLimite = role == UserRole.acheteur;
           if (roleLimite &&
               (location == '/' ||
@@ -66,6 +70,10 @@ GoRouter createRouter(AuthProvider auth) {
       GoRoute(
         path: '/tableau-de-bord',
         builder: (context, state) => const DashboardScreen(),
+      ),
+      GoRoute(
+        path: '/admin/annonces',
+        builder: (context, state) => const AnnonceModerationScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

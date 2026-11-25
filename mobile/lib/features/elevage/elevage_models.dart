@@ -123,3 +123,53 @@ class SuiviSanitaire {
     prochaineEcheance: prochaineEcheance,
   );
 }
+
+class SuiviReproduction {
+  const SuiviReproduction({
+    this.id,
+    required this.animalId,
+    this.dateSaillie,
+    this.miseBasPrevue,
+    this.miseBasReelle,
+    this.nombrePetits,
+    this.notes = '',
+  });
+
+  final int? id;
+  final int animalId;
+  final DateTime? dateSaillie;
+  final DateTime? miseBasPrevue;
+  final DateTime? miseBasReelle;
+  final int? nombrePetits;
+  final String notes;
+
+  factory SuiviReproduction.fromJson(Map<String, dynamic> json) =>
+      SuiviReproduction(
+        id: json['id'] as int?,
+        animalId: json['animal'] as int,
+        dateSaillie: parseDate(json['date_saillie']),
+        miseBasPrevue: parseDate(json['mise_bas_prevue']),
+        miseBasReelle: parseDate(json['mise_bas_reelle']),
+        nombrePetits: json['nombre_petits'] as int?,
+        notes: json['notes'] as String? ?? '',
+      );
+
+  Map<String, dynamic> toJson() => {
+    'animal': animalId,
+    'date_saillie': toApiDate(dateSaillie),
+    'mise_bas_prevue': toApiDate(miseBasPrevue),
+    'mise_bas_reelle': toApiDate(miseBasReelle),
+    'nombre_petits': nombrePetits,
+    'notes': notes,
+  };
+
+  SuiviReproduction copyWith({int? id}) => SuiviReproduction(
+    id: id ?? this.id,
+    animalId: animalId,
+    dateSaillie: dateSaillie,
+    miseBasPrevue: miseBasPrevue,
+    miseBasReelle: miseBasReelle,
+    nombrePetits: nombrePetits,
+    notes: notes,
+  );
+}

@@ -7,6 +7,8 @@ import '../../core/theme.dart';
 import '../../core/visuels.dart';
 import '../../core/widgets.dart';
 import '../home/menu.dart';
+import 'calendrier_recoltes_screen.dart';
+import 'historique_recoltes_screen.dart';
 import 'parcelle.dart';
 import 'parcelle_form_screen.dart';
 import 'parcelle_repository.dart';
@@ -81,6 +83,17 @@ class _CulturesScreenState extends State<CulturesScreen> {
                   image: 'assets/img/culture-mil.jpg',
                 ),
                 const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  key: const Key('cultures-calendrier'),
+                  onPressed: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(
+                      builder: (_) => const CalendrierRecoltesScreen(),
+                    ),
+                  ),
+                  icon: const Icon(Icons.calendar_month_outlined),
+                  label: const Text('Calendrier des récoltes'),
+                ),
+                const SizedBox(height: 16),
                 _Statistiques(parcelles: parcelles),
                 const SizedBox(height: 16),
                 if (cultures.length > 1)
@@ -116,6 +129,15 @@ class _CulturesScreenState extends State<CulturesScreen> {
                     parcelle: parcelle,
                     onModifier: () => _openForm(parcelle),
                     onSupprimer: () => _supprimer(parcelle),
+                    onHistorique: parcelle.id == null
+                        ? null
+                        : () => Navigator.of(context).push<void>(
+                            MaterialPageRoute(
+                              builder: (_) => HistoriqueRecoltesScreen(
+                                parcelle: parcelle,
+                              ),
+                            ),
+                          ),
                   ),
               ],
             );
@@ -215,11 +237,13 @@ class _CarteParcelle extends StatelessWidget {
     required this.parcelle,
     required this.onModifier,
     required this.onSupprimer,
+    required this.onHistorique,
   });
 
   final Parcelle parcelle;
   final VoidCallback onModifier;
   final VoidCallback onSupprimer;
+  final VoidCallback? onHistorique;
 
   @override
   Widget build(BuildContext context) {
@@ -300,6 +324,15 @@ class _CarteParcelle extends StatelessWidget {
             BoutonCarte('Supprimer', danger: true, onPressed: onSupprimer),
           ],
         ),
+        if (onHistorique != null) ...[
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            key: Key('parcelle-recoltes-${parcelle.id}'),
+            onPressed: onHistorique,
+            icon: const Icon(Icons.history),
+            label: const Text('Historique des rendements'),
+          ),
+        ],
       ],
     );
   }

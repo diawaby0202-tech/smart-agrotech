@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Animal, SuiviSanitaire
+from .models import Animal, SuiviReproduction, SuiviSanitaire
 
 
 class AnimalSerializer(serializers.ModelSerializer):
@@ -39,4 +39,43 @@ class SuiviSanitaireSerializer(serializers.ModelSerializer):
         ech = data.get('prochaine_echeance', getattr(self.instance, 'prochaine_echeance', None))
         if date and ech and ech < date:
             raise serializers.ValidationError("L'échéance doit être après la date du suivi.")
+        return data
+
+
+class SuiviReproductionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SuiviReproduction
+        fields = [
+            'id', 'animal', 'date_saillie', 'mise_bas_prevue',
+            'mise_bas_reelle', 'nombre_petits', 'notes', 'date_creation',
+        ]
+        read_only_fields = ['id', 'date_creation']
+
+    def validate_animal(self, animal):
+        if animal.proprietaire_id != self.context['request'].user.id:
+            raise serializers.ValidationError("Cet animal ne vous appartient pas.")
+        return animal
+
+    def validate(self, data):
+        saillie = data.get(
+            'date_saillie', getattr(self.instance, 'date_saillie', None)
+        )
+        prevue = data.get(
+            'mise_bas_prevue', getattr(self.instance, 'mise_bas_prevue', None)
+        )
+        reelle = data.get(
+            'mise_bas_reelle', getattr(self.instance, 'mise_bas_reelle', None)
+        )
+        if not any((saillie, prevue, reelle)):
+            raise serializers.ValidationError(
+                'Renseignez au moins une date de reproduction.'
+            )
+        if saillie and prevue and prevue < saillie:
+            raise serializers.ValidationError(
+                'La mise bas prévue doit suivre la date de saillie.'
+            )
+        if saillie and reelle and reelle < saillie:
+            raise serializers.ValidationError(
+                'La mise bas réelle doit suivre la date de saillie.'
+            )
         return data

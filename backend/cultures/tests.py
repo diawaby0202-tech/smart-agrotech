@@ -11,7 +11,7 @@ from PIL import Image
 
 from elevage.models import Animal, SuiviSanitaire
 
-from .models import Parcelle
+from .models import Parcelle, Recolte
 
 User = get_user_model()
 
@@ -87,6 +87,57 @@ class ParcelleTests(APITestCase):
         self.client.force_authenticate(self.u1)
         noms = [p['nom'] for p in self.client.get(self.url + 'calendrier/').json()]
         self.assertEqual(noms, ['a', 'b'])
+
+
+class RecolteTests(APITestCase):
+    def setUp(self):
+        self.u1 = creer('recolte-a@x.com')
+        self.u2 = creer('recolte-b@x.com')
+        self.parcelle = Parcelle.objects.create(
+            proprietaire=self.u1,
+            nom='Champ 1',
+            culture='Mil',
+            superficie=2,
+        )
+        self.url = '/api/recoltes/'
+        self.data = {
+            'parcelle': self.parcelle.id,
+            'date': '2026-10-14',
+            'quantite': '125.50',
+            'unite': 'kg',
+            'notes': 'Première récolte',
+        }
+
+    def test_auth_requise(self):
+        self.assertEqual(self.client.get(self.url).status_code, 401)
+
+    def test_creation_et_filtre_par_parcelle(self):
+        self.client.force_authenticate(self.u1)
+        response = self.client.post(self.url, self.data)
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['quantite'], '125.50')
+        self.assertEqual(
+            len(self.client.get(f'{self.url}?parcelle={self.parcelle.id}').json()),
+            1,
+        )
+
+    def test_refuse_parcelle_d_un_autre_utilisateur(self):
+        self.client.force_authenticate(self.u2)
+
+        response = self.client.post(self.url, self.data)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Recolte.objects.count(), 0)
+
+    def test_quantite_invalide(self):
+        self.client.force_authenticate(self.u1)
+
+        response = self.client.post(
+            self.url, {**self.data, 'quantite': '0'}
+        )
+
+        self.assertEqual(response.status_code, 400)
 
 
 class DonneesExempleTests(TestCase):

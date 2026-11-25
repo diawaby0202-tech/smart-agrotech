@@ -3,8 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Parcelle
-from .serializers import ParcelleSerializer
+from .models import Parcelle, Recolte
+from .serializers import ParcelleSerializer, RecolteSerializer
 
 
 class ParcelleViewSet(viewsets.ModelViewSet):
@@ -32,3 +32,18 @@ class ParcelleViewSet(viewsets.ModelViewSet):
             .order_by('date_recolte_prevue')
         )
         return Response(self.get_serializer(qs, many=True).data)
+
+
+class RecolteViewSet(viewsets.ModelViewSet):
+    """Historique des récoltes des parcelles de l'utilisateur connecté."""
+    serializer_class = RecolteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = Recolte.objects.filter(
+            parcelle__proprietaire=self.request.user
+        ).select_related('parcelle')
+        parcelle = self.request.query_params.get('parcelle', '')
+        if parcelle.isdigit():
+            qs = qs.filter(parcelle_id=int(parcelle))
+        return qs

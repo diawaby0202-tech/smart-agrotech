@@ -6,8 +6,12 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Animal, SuiviSanitaire
-from .serializers import AnimalSerializer, SuiviSanitaireSerializer
+from .models import Animal, SuiviReproduction, SuiviSanitaire
+from .serializers import (
+    AnimalSerializer,
+    SuiviReproductionSerializer,
+    SuiviSanitaireSerializer,
+)
 
 
 class AnimalViewSet(viewsets.ModelViewSet):
@@ -51,3 +55,18 @@ class SuiviSanitaireViewSet(viewsets.ModelViewSet):
             prochaine_echeance__lte=today + timedelta(days=jours),
         ).order_by('prochaine_echeance')
         return Response(self.get_serializer(qs, many=True).data)
+
+
+class SuiviReproductionViewSet(viewsets.ModelViewSet):
+    """Historique de reproduction des animaux de l'utilisateur connecté."""
+    serializer_class = SuiviReproductionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = SuiviReproduction.objects.filter(
+            animal__proprietaire=self.request.user
+        ).select_related('animal')
+        animal = self.request.query_params.get('animal', '')
+        if animal.isdigit():
+            qs = qs.filter(animal_id=int(animal))
+        return qs

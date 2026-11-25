@@ -40,3 +40,21 @@ class SuiviSanitaire(models.Model):
 
     def __str__(self):
         return f'{self.type} - {self.animal}'
+
+
+class SuiviReproduction(models.Model):
+    animal = models.ForeignKey(
+        Animal, on_delete=models.CASCADE, related_name='suivis_reproduction'
+    )
+    date_saillie = models.DateField(null=True, blank=True)
+    mise_bas_prevue = models.DateField(null=True, blank=True)
+    mise_bas_reelle = models.DateField(null=True, blank=True)
+    nombre_petits = models.PositiveIntegerField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    date_creation = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date_saillie', '-id']
+
+    def __str__(self):
+        return f'Reproduction — {self.animal}'

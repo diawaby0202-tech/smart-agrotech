@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class StatutParcelle(models.TextChoices):
@@ -31,3 +32,29 @@ class Parcelle(models.Model):
 
     def __str__(self):
         return f'{self.nom} ({self.culture})'
+
+
+class UniteRecolte(models.TextChoices):
+    KILOGRAMME = 'kg', 'Kilogrammes'
+    TONNE = 'tonne', 'Tonnes'
+    SAC = 'sac', 'Sacs'
+    CAISSE = 'caisse', 'Caisses'
+
+
+class Recolte(models.Model):
+    parcelle = models.ForeignKey(
+        Parcelle, on_delete=models.CASCADE, related_name='recoltes'
+    )
+    date = models.DateField(default=timezone.localdate)
+    quantite = models.DecimalField(max_digits=12, decimal_places=2)
+    unite = models.CharField(
+        max_length=10, choices=UniteRecolte.choices, default=UniteRecolte.KILOGRAMME
+    )
+    notes = models.TextField(blank=True)
+    date_creation = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-id']
+
+    def __str__(self):
+        return f'{self.parcelle.nom} — {self.quantite} {self.unite}'

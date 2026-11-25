@@ -19,6 +19,9 @@ abstract class ElevageRepository {
   Future<List<SuiviSanitaire>> tousLesSuivis();
   Future<SuiviSanitaire> createSuivi(SuiviSanitaire suivi);
   Future<void> deleteSuivi(int id);
+  Future<List<SuiviReproduction>> reproductions(int animalId);
+  Future<SuiviReproduction> createReproduction(SuiviReproduction suivi);
+  Future<void> deleteReproduction(int id);
 
   /// Suivis dont l'échéance tombe dans les [jours] prochains jours (RF-12).
   Future<List<SuiviSanitaire>> echeances({int jours = 30});
@@ -29,6 +32,7 @@ class ApiElevageRepository implements ElevageRepository {
 
   static const _animaux = '/animaux/';
   static const _suivis = '/suivis-sanitaires/';
+  static const _reproductions = '/suivis-reproduction/';
   final ApiClient _client;
 
   Map<String, dynamic> _map(Object? data) =>
@@ -107,6 +111,31 @@ class ApiElevageRepository implements ElevageRepository {
       _client.call((dio) => dio.delete('$_suivis$id/'));
 
   @override
+  Future<List<SuiviReproduction>> reproductions(int animalId) =>
+      _client.call(
+        (dio) async => [
+          for (final item
+              in (await dio.get(
+                _reproductions,
+                queryParameters: {'animal': animalId},
+              )).data as List)
+            SuiviReproduction.fromJson(Map<String, dynamic>.from(item as Map)),
+        ],
+      );
+
+  @override
+  Future<SuiviReproduction> createReproduction(SuiviReproduction suivi) =>
+      _client.call(
+        (dio) async => SuiviReproduction.fromJson(
+          _map((await dio.post(_reproductions, data: suivi.toJson())).data),
+        ),
+      );
+
+  @override
+  Future<void> deleteReproduction(int id) =>
+      _client.call((dio) => dio.delete('$_reproductions$id/'));
+
+  @override
   Future<List<SuiviSanitaire>> echeances({int jours = 30}) => _client.call(
     (dio) async => _parseSuivis(
       (await dio.get(
@@ -172,8 +201,10 @@ class MockElevageRepository implements ElevageRepository {
 
   final List<Animal> _animaux = [];
   final List<SuiviSanitaire> _suivis = [];
+  final List<SuiviReproduction> _reproductions = [];
   int _nextAnimalId = 4;
   int _nextSuiviId = 4;
+  int _nextReproductionId = 1;
 
   @override
   Future<List<Animal>> animaux() async => _animaux.reversed.toList();
@@ -201,6 +232,7 @@ class MockElevageRepository implements ElevageRepository {
   Future<void> deleteAnimal(int id) async {
     _animaux.removeWhere((a) => a.id == id);
     _suivis.removeWhere((s) => s.animalId == id);
+    _reproductions.removeWhere((s) => s.animalId == id);
   }
 
   @override
@@ -225,6 +257,38 @@ class MockElevageRepository implements ElevageRepository {
   @override
   Future<void> deleteSuivi(int id) async =>
       _suivis.removeWhere((s) => s.id == id);
+
+  @override
+  Future<List<SuiviReproduction>> reproductions(int animalId) async =>
+      _reproductions
+          .where((suivi) => suivi.animalId == animalId)
+          .toList()
+        ..sort(
+          (a, b) => (b.dateSaillie ?? b.miseBasReelle ?? DateTime(0)).compareTo(
+            a.dateSaillie ?? a.miseBasReelle ?? DateTime(0),
+          ),
+        );
+
+  @override
+  Future<SuiviReproduction> createReproduction(
+    SuiviReproduction suivi,
+  ) async {
+    final saillie = suivi.dateSaillie;
+    if (saillie != null &&
+        ((suivi.miseBasPrevue != null &&
+                suivi.miseBasPrevue!.isBefore(saillie)) ||
+            (suivi.miseBasReelle != null &&
+                suivi.miseBasReelle!.isBefore(saillie)))) {
+      throw ApiException('Les dates de mise bas doivent suivre la saillie.');
+    }
+    final created = suivi.copyWith(id: _nextReproductionId++);
+    _reproductions.add(created);
+    return created;
+  }
+
+  @override
+  Future<void> deleteReproduction(int id) async =>
+      _reproductions.removeWhere((suivi) => suivi.id == id);
 
   @override
   Future<List<SuiviSanitaire>> echeances({int jours = 30}) async =>

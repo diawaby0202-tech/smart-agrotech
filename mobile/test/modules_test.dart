@@ -5,10 +5,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smart_agrotech/features/auth/user.dart';
+import 'package:smart_agrotech/features/cultures/calendrier_recoltes_screen.dart';
+import 'package:smart_agrotech/features/cultures/historique_recoltes_screen.dart';
 import 'package:smart_agrotech/features/cultures/parcelle_form_screen.dart';
 import 'package:smart_agrotech/features/elevage/animal_form_screen.dart';
+import 'package:smart_agrotech/features/elevage/suivi_reproduction_screen.dart';
 import 'package:smart_agrotech/features/home/dashboard_screen.dart';
 import 'package:smart_agrotech/features/marche/annonce_form_screen.dart';
+import 'package:smart_agrotech/features/marche/annonce_moderation_screen.dart';
 
 import 'helpers.dart';
 
@@ -28,7 +32,15 @@ void main() {
     }
     expect(find.byKey(const Key('profil')), findsOneWidget);
     expect(find.text('Gestion de l’application'), findsOneWidget);
+    await voir(tester, find.byKey(const Key('dashboard-moderation-annonces')));
+    await tester.tap(find.byKey(const Key('dashboard-moderation-annonces')));
+    await tester.pumpAndSettle();
+    expect(find.byType(AnnonceModerationScreen), findsOneWidget);
+    expect(find.text('Aucune annonce à afficher.'), findsOneWidget);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
 
+    await voir(tester, find.byKey(const Key('dashboard-cultures')));
     await tester.tap(find.byKey(const Key('dashboard-cultures')));
     await tester.pumpAndSettle();
     expect(find.text('Suivi des cultures'), findsOneWidget);
@@ -42,6 +54,7 @@ void main() {
       'Marché',
       'Tableau de bord',
       'Mon profil',
+      'Modération des annonces',
     ]) {
       expect(
         find.descendant(of: find.byType(Drawer), matching: find.text(lien)),
@@ -63,6 +76,11 @@ void main() {
     GoRouter.of(dashboardContext).go('/cultures');
     await tester.pumpAndSettle();
     expect(find.byType(DashboardScreen), findsOneWidget);
+    GoRouter.of(
+      tester.element(find.byType(DashboardScreen)),
+    ).go('/admin/annonces');
+    await tester.pumpAndSettle();
+    expect(find.byType(AnnonceModerationScreen), findsNothing);
 
     await ouvrirMenu(tester);
     for (final lien in ['Alertes météo', 'Marché']) {
@@ -220,6 +238,39 @@ void main() {
     expect(find.text('Mon élevage'), findsOneWidget);
   });
 
+  testWidgets('cultures : calendrier et historique des récoltes', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await loginDemo(tester);
+    await ouvrirOnglet(tester, 'Cultures');
+
+    await tester.tap(find.byKey(const Key('cultures-calendrier')));
+    await tester.pumpAndSettle();
+    expect(find.byType(CalendrierRecoltesScreen), findsOneWidget);
+    expect(find.byKey(const Key('calendrier-grille')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('calendrier-mois-suivant')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+
+    await voir(tester, find.byKey(const Key('parcelle-recoltes-1')));
+    await tester.tap(find.byKey(const Key('parcelle-recoltes-1')));
+    await tester.pumpAndSettle();
+    expect(find.byType(HistoriqueRecoltesScreen), findsOneWidget);
+    expect(
+      find.text('Aucune récolte enregistrée pour cette parcelle.'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const Key('recolte-ajouter')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('recolte-quantite')), '50');
+    await appuyer(tester, const Key('recolte-submit'));
+    expect(find.byKey(const Key('recolte-1')), findsOneWidget);
+    expect(find.textContaining('20 kg/ha'), findsOneWidget);
+  });
+
   testWidgets('cultures : statistiques, carte et ajout d\'une parcelle', (
     tester,
   ) async {
@@ -343,6 +394,7 @@ void main() {
     await voir(tester, find.text('SN-0142'));
     await tester.tap(find.text('SN-0142'));
     await tester.pumpAndSettle();
+    await voir(tester, find.textContaining('Vaccin contre la péripneumonie'));
     expect(
       find.textContaining('Vaccin contre la péripneumonie'),
       findsOneWidget,
@@ -356,7 +408,17 @@ void main() {
     );
     await appuyer(tester, const Key('suivi-submit'));
 
+    await voir(tester, find.textContaining('Rappel fièvre aphteuse'));
     expect(find.textContaining('Rappel fièvre aphteuse'), findsOneWidget);
+
+    await voir(tester, find.byKey(const Key('animal-suivi-reproduction')));
+    await tester.tap(find.byKey(const Key('animal-suivi-reproduction')));
+    await tester.pumpAndSettle();
+    expect(find.byType(SuiviReproductionScreen), findsOneWidget);
+    await tester.tap(find.byKey(const Key('reproduction-ajouter')));
+    await tester.pumpAndSettle();
+    await appuyer(tester, const Key('reproduction-submit'));
+    expect(find.text('Gestation / suivi en cours'), findsOneWidget);
   });
 
   testWidgets('météo : prévisions, risques et alertes', (tester) async {
@@ -439,6 +501,22 @@ void main() {
     expect(find.textContaining('Awa Diop'), findsOneWidget);
     expect(find.textContaining('77 123 45 67'), findsOneWidget);
     expect(find.byKey(const Key('annonce-appeler')), findsNothing);
+  });
+
+  testWidgets('marché : filtres par zone et prix', (tester) async {
+    await pumpApp(tester);
+    await loginDemo(tester);
+    await ouvrirOnglet(tester, 'Marché');
+
+    await tester.tap(find.byTooltip('Zone et prix'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('filtre-zone')), findsOneWidget);
+    expect(find.text('Prix min'), findsOneWidget);
+    expect(find.text('Prix max'), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('filtre-zone')), 'Thiès');
+    await tester.tap(find.byKey(const Key('filtre-appliquer')));
+    await tester.pumpAndSettle();
+    expect(find.text('Aucune annonce ne correspond.'), findsOneWidget);
   });
 
   testWidgets('marché : aucune annonce de démonstration préremplie', (
