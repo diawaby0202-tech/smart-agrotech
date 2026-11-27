@@ -17,6 +17,9 @@ class Parcelle(models.Model):
     nom = models.CharField(max_length=100)
     culture = models.CharField(max_length=100)
     superficie = models.DecimalField(max_digits=8, decimal_places=2, help_text='En hectares')
+    prix_indicatif = models.PositiveIntegerField(
+        null=True, blank=True, help_text='En FCFA par kilogramme'
+    )
     localisation = models.CharField(max_length=150, blank=True)
     date_semis = models.DateField(null=True, blank=True)
     date_recolte_prevue = models.DateField(null=True, blank=True)

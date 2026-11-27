@@ -150,16 +150,42 @@ class _ElevageScreenState extends State<ElevageScreen> {
                       textAlign: TextAlign.center,
                     ),
                   ),
-                for (final animal in affiches)
-                  _CarteAnimal(
-                    animal: animal,
-                    etat: etats[animal.id]!,
-                    prochain: prochainSoin(animal, troupeau.suivis),
-                    onOuvrir: () => _ouvrir(AnimalDetailScreen(animal: animal)),
-                    onSoin: () => _ouvrir(SuiviFormScreen(animal: animal)),
-                    onModifier: () => _ouvrir(AnimalFormScreen(animal: animal)),
-                    onSupprimer: () => _supprimer(animal),
+                for (var i = 0; i < affiches.length; i += 2) ...[
+                  if (i > 0) const SizedBox(height: 12),
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (var j = i; j < i + 2; j++) ...[
+                          if (j > i) const SizedBox(width: 12),
+                          if (j < affiches.length)
+                            Expanded(
+                              child: _CarteAnimal(
+                                animal: affiches[j],
+                                etat: etats[affiches[j].id]!,
+                                prochain: prochainSoin(
+                                  affiches[j],
+                                  troupeau.suivis,
+                                ),
+                                onOuvrir: () => _ouvrir(
+                                  AnimalDetailScreen(animal: affiches[j]),
+                                ),
+                                onSoin: () => _ouvrir(
+                                  SuiviFormScreen(animal: affiches[j]),
+                                ),
+                                onModifier: () => _ouvrir(
+                                  AnimalFormScreen(animal: affiches[j]),
+                                ),
+                                onSupprimer: () => _supprimer(affiches[j]),
+                              ),
+                            )
+                          else
+                            const Spacer(),
+                        ],
+                      ],
+                    ),
                   ),
+                ],
               ],
             );
           },
@@ -237,57 +263,162 @@ class _CarteAnimal extends StatelessWidget {
     final theme = Theme.of(context);
     final nom = animal.identifiant.isEmpty ? animal.espece : animal.identifiant;
     final soin = prochain;
+    final couleurEtat = etat == EtatSante.attention ? Couleurs.or600 : etat.couleur;
+    final detail = [
+      animal.espece,
+      if (animal.race.isNotEmpty) animal.race,
+    ].join(', ');
+    final texteSoin = soin == null
+        ? 'Aucun soin planifié'
+        : '${soin.type.label} — '
+              '${formatDateLongue(soin.prochaineEcheance, annee: false)} '
+              '(${_ecart(soin.prochaineEcheance!)})';
 
-    return CartePhoto(
-      image: animal.image?.isNotEmpty == true
-          ? animal.image!
-          : visuelEspece(animal.espece).image,
-      onTap: onOuvrir,
-      badgeBas: Etiquette(etat.label, fond: etat.couleur),
-      children: [
-        Text(
-          animal.estLot ? '$nom (${animal.effectif} têtes)' : nom,
-          style: theme.textTheme.titleMedium,
-        ),
-        const SizedBox(height: 4),
-        LigneInfo(
-          Icons.sell_outlined,
-          [animal.espece, if (animal.race.isNotEmpty) animal.race].join(', '),
-        ),
-        LigneInfo(Icons.cake_outlined, ageAnimal(animal.dateNaissance)),
-        const SizedBox(height: 12),
-        if (soin == null)
-          const Encadre(
-            icone: Icons.check_circle_outline,
-            texte: 'Aucun soin planifié',
-            fond: Couleurs.vert50,
-            couleur: Couleurs.vert700,
-          )
-        else
-          Encadre(
-            icone: Icons.vaccines_outlined,
-            texte:
-                '${soin.type.label} — '
-                '${formatDateLongue(soin.prochaineEcheance, annee: false)} '
-                '(${_ecart(soin.prochaineEcheance!)})',
-            fond: etat == EtatSante.critique
-                ? Couleurs.dangerClair
-                : Couleurs.or100,
-            couleur: etat == EtatSante.critique
-                ? Couleurs.danger
-                : Couleurs.or600,
-          ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      color: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onOuvrir,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            BoutonCarte('+ Soin', onPressed: onSoin),
-            BoutonCarte('Modifier', onPressed: onModifier),
-            BoutonCarte('Supprimer', danger: true, onPressed: onSupprimer),
+            AspectRatio(
+              aspectRatio: 1.12,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ImageSource(
+                    animal.image?.isNotEmpty == true
+                        ? animal.image!
+                        : visuelEspece(animal.espece).image,
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.94),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                      child: Text(
+                        etat.label,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: couleurEtat,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 6, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          nom,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: Couleurs.encre,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 17,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: PopupMenuButton<String>(
+                          tooltip: 'Actions',
+                          padding: EdgeInsets.zero,
+                          icon: const Icon(
+                            Icons.more_vert,
+                            size: 20,
+                            color: Couleurs.ardoise500,
+                          ),
+                          onSelected: (action) {
+                            switch (action) {
+                              case 'soin':
+                                onSoin();
+                              case 'modifier':
+                                onModifier();
+                              case 'supprimer':
+                                onSupprimer();
+                            }
+                          },
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(value: 'soin', child: Text('+ Soin')),
+                            PopupMenuItem(
+                              value: 'modifier',
+                              child: Text('Modifier'),
+                            ),
+                            PopupMenuItem(
+                              value: 'supprimer',
+                              child: Text('Supprimer'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    animal.estLot
+                        ? '${animal.effectif} têtes'
+                        : ageAnimal(animal.dateNaissance),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: Couleurs.vert700,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    detail,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Couleurs.ardoise500,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Text(
+                      texteSoin,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: etat == EtatSante.critique
+                            ? Couleurs.danger
+                            : Couleurs.ardoise700,
+                        fontSize: 12.5,
+                        height: 1.25,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
-      ],
+      ),
     );
   }
 

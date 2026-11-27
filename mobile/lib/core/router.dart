@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../features/alertes/meteo_screen.dart';
 import '../features/auth/auth_provider.dart';
 import '../features/auth/login_screen.dart';
+import '../features/auth/profil_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/auth/user.dart';
 import '../features/auth/welcome_screen.dart';
@@ -34,16 +35,18 @@ GoRouter createRouter(AuthProvider auth) {
         case AuthStatus.authenticated:
           final onPublicPage =
               _publicRoutes.contains(location) || location == '/demarrage';
-          if (onPublicPage) return '/tableau-de-bord';
+          if (onPublicPage) {
+            return auth.user?.role == UserRole.acheteur
+                ? '/'
+                : '/tableau-de-bord';
+          }
           final role = auth.user?.role;
           if (location == '/admin/annonces' && role != UserRole.admin) {
             return '/tableau-de-bord';
           }
           final roleLimite = role == UserRole.acheteur;
           if (roleLimite &&
-              (location == '/' ||
-                  location == '/cultures' ||
-                  location == '/elevage')) {
+              (location == '/cultures' || location == '/elevage')) {
             return '/tableau-de-bord';
           }
           return null;
@@ -84,6 +87,7 @@ GoRouter createRouter(AuthProvider auth) {
           _branch('/elevage', const ElevageScreen()),
           _branch('/meteo', const MeteoScreen()),
           _branch('/marche', const MarcheScreen()),
+          _branch('/profil', const ProfilScreen()),
         ],
       ),
     ],

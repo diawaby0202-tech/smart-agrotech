@@ -10,9 +10,12 @@ import 'package:smart_agrotech/features/cultures/historique_recoltes_screen.dart
 import 'package:smart_agrotech/features/cultures/parcelle_form_screen.dart';
 import 'package:smart_agrotech/features/elevage/animal_form_screen.dart';
 import 'package:smart_agrotech/features/elevage/suivi_reproduction_screen.dart';
+import 'package:smart_agrotech/features/home/accueil_screen.dart';
 import 'package:smart_agrotech/features/home/dashboard_screen.dart';
+import 'package:smart_agrotech/features/auth/profil_screen.dart';
 import 'package:smart_agrotech/features/marche/annonce_form_screen.dart';
 import 'package:smart_agrotech/features/marche/annonce_moderation_screen.dart';
+import 'package:smart_agrotech/features/marche/commande_screen.dart';
 
 import 'helpers.dart';
 
@@ -63,17 +66,23 @@ void main() {
     }
   });
 
-  testWidgets('acheteur : limité au marché et aux alertes', (tester) async {
+  testWidgets('acheteur : accueil, marché, alertes et profil', (tester) async {
     await pumpApp(tester, role: UserRole.acheteur);
 
-    expect(find.byKey(const Key('dashboard-cultures')), findsNothing);
-    expect(find.byKey(const Key('dashboard-elevage')), findsNothing);
-    expect(find.byKey(const Key('dashboard-meteo')), findsOneWidget);
-    expect(find.byKey(const Key('dashboard-marche')), findsOneWidget);
-    expect(find.byKey(const Key('profil')), findsNothing);
+    expect(find.byKey(const Key('profil')), findsOneWidget);
+    expect(find.byType(AccueilScreen), findsOneWidget);
+    for (final onglet in ['Accueil', 'Marché', 'Alertes', 'Profil']) {
+      expect(
+        find.descendant(
+          of: find.byType(NavigationBar),
+          matching: find.text(onglet),
+        ),
+        findsOneWidget,
+      );
+    }
 
-    final dashboardContext = tester.element(find.byType(DashboardScreen));
-    GoRouter.of(dashboardContext).go('/cultures');
+    final accueilContext = tester.element(find.byType(AccueilScreen));
+    GoRouter.of(accueilContext).go('/cultures');
     await tester.pumpAndSettle();
     expect(find.byType(DashboardScreen), findsOneWidget);
     GoRouter.of(
@@ -83,24 +92,36 @@ void main() {
     expect(find.byType(AnnonceModerationScreen), findsNothing);
 
     await ouvrirMenu(tester);
-    for (final lien in ['Alertes météo', 'Marché']) {
+    for (final lien in ['Accueil', 'Alertes météo', 'Marché', 'Mon profil']) {
       expect(
         find.descendant(of: find.byType(Drawer), matching: find.text(lien)),
         findsOneWidget,
       );
     }
-    for (final lien in [
-      'Accueil',
-      'Cultures',
-      'Élevage',
-      'Tableau de bord',
-      'Mon profil',
-    ]) {
+    for (final lien in ['Cultures', 'Élevage', 'Tableau de bord']) {
       expect(
         find.descendant(of: find.byType(Drawer), matching: find.text(lien)),
         findsNothing,
       );
     }
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    await ouvrirOnglet(tester, 'Profil');
+    expect(find.byType(ProfilScreen), findsOneWidget);
+  });
+
+  testWidgets('acheteur : commandes accessibles depuis le marché', (
+    tester,
+  ) async {
+    await pumpApp(tester, role: UserRole.acheteur);
+    await ouvrirOnglet(tester, 'Marché');
+
+    await tester.tap(find.byKey(const Key('marche-commandes')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CommandesScreen), findsOneWidget);
+    expect(find.text('Aucune commande pour le moment.'), findsOneWidget);
   });
 
   testWidgets('accueil : tuiles des modules', (tester) async {
@@ -291,7 +312,7 @@ void main() {
     expect(find.text('Parcelles suivies'), findsOneWidget);
     expect(find.text('7 ha'), findsOneWidget);
 
-    await voir(tester, find.text('Champ nord'));
+    await voir(tester, find.textContaining('Champ nord'));
     expect(
       find.textContaining('Récolte prévue dans 5 jour(s)'),
       findsOneWidget,
@@ -302,12 +323,18 @@ void main() {
     await tester.enterText(find.byKey(const Key('parcelle-nom')), 'Bas-fond');
     await tester.enterText(find.byKey(const Key('parcelle-culture')), 'Mil');
     await tester.enterText(find.byKey(const Key('parcelle-superficie')), '1,5');
+    await tester.enterText(
+      find.byKey(const Key('parcelle-prix-indicatif')),
+      '900',
+    );
     await appuyer(tester, const Key('parcelle-choisir-photo'));
     expect(find.byType(Image), findsWidgets);
     await appuyer(tester, const Key('parcelle-submit'));
 
     expect(find.text('8,5 ha'), findsOneWidget);
-    await voir(tester, find.text('Bas-fond'));
+    await voir(tester, find.textContaining('Bas-fond'));
+    expect(find.text('900 F/kg'), findsOneWidget);
+    expect(find.text('prix indicatif'), findsWidgets);
     expect(
       find.byWidgetPredicate(
         (widget) =>
@@ -473,6 +500,11 @@ void main() {
     await tester.tap(find.text('Légumes').last);
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('annonce-prix')), '15000');
+    await tester.enterText(find.byKey(const Key('annonce-stock')), '10');
+    await tester.tap(find.byKey(const Key('annonce-unite')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('kg').last);
+    await tester.pumpAndSettle();
 
     // Sans photo, l'annonce est refusée.
     await appuyer(tester, const Key('annonce-submit'));
@@ -493,7 +525,7 @@ void main() {
     // Le filtre est au bout de la rangée de catégories, hors de l'écran.
     await appuyer(tester, const Key('marche-mes-annonces'));
     await voir(tester, find.text('Oignons'));
-    expect(find.text('15 000 FCFA'), findsOneWidget);
+    expect(find.text('15 000 F/kg'), findsOneWidget);
     await appuyer(tester, const Key('marche-mes-annonces'));
     await voir(tester, find.text('Oignons'));
     await tester.tap(find.text('Oignons'));

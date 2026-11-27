@@ -17,6 +17,8 @@ import 'package:smart_agrotech/features/marche/annonce.dart';
 import 'package:smart_agrotech/features/marche/annonce_repository.dart';
 import 'package:smart_agrotech/features/marche/annonce_moderation.dart';
 import 'package:smart_agrotech/features/marche/annonce_moderation_repository.dart';
+import 'package:smart_agrotech/features/marche/commande.dart';
+import 'package:smart_agrotech/features/marche/commande_repository.dart';
 
 import 'api_client_test.dart' show FakeAdapter;
 
@@ -44,6 +46,7 @@ void main() {
               'nom': 'Champ nord',
               'culture': 'Arachide',
               'superficie': '2.50',
+              'prix_indicatif': 900,
               'localisation': 'Thiès',
               'date_semis': '2026-07-01',
               'date_recolte_prevue': null,
@@ -59,9 +62,27 @@ void main() {
     final parcelle = (await repository.list()).single;
 
     expect(parcelle.superficie, 2.5);
+    expect(parcelle.prixIndicatif, 900);
     expect(parcelle.dateSemis, DateTime(2026, 7, 1));
     expect(parcelle.dateRecoltePrevue, isNull);
     expect(parcelle.statut, StatutParcelle.croissance);
+  });
+
+  test('parcelles : envoi du prix indicatif', () async {
+    final repository = ApiParcelleRepository(
+      client((options) => (201, {...options.data as Map, 'id': 8})),
+    );
+
+    await repository.create(
+      const Parcelle(
+        nom: 'Champ nord',
+        culture: 'Arachide',
+        superficie: 2.5,
+        prixIndicatif: 900,
+      ),
+    );
+
+    expect(corps(), containsPair('prix_indicatif', 900));
   });
 
   test('récoltes : filtre, création et date relue', () async {
@@ -81,10 +102,7 @@ void main() {
                   },
                 ],
               )
-            : (
-                201,
-                {...options.data as Map, 'id': 13},
-              ),
+            : (201, {...options.data as Map, 'id': 13}),
       ),
     );
 
@@ -130,6 +148,7 @@ void main() {
       'nom': 'Bas-fond',
       'culture': 'Mil',
       'superficie': '1.50',
+      'prix_indicatif': null,
       'localisation': '',
       'date_semis': '2026-06-15',
       'date_recolte_prevue': null,
@@ -178,6 +197,49 @@ void main() {
     expect(form.fields.map((field) => field.key), contains('nom'));
     expect(form.files.single.key, 'image');
   });
+
+  test(
+    'commandes : création, paiement signalé et confirmation vendeur',
+    () async {
+      final order = {
+        'id': 31,
+        'annonce': 8,
+        'annonce_titre': 'Mil local',
+        'annonce_unite': 'kg',
+        'acheteur_nom': 'Aminata Test',
+        'vendeur_nom': 'Moussa Diop',
+        'quantite': '2.50',
+        'prix_unitaire': '900',
+        'total': '2250',
+        'moyen_paiement': 'wave',
+        'telephone_paiement': '770000000',
+        'statut': 'a_payer',
+        'date_expiration': '2026-11-27T16:30:00Z',
+        'date_creation': '2026-11-27T16:00:00Z',
+      };
+      final repository = ApiCommandeRepository(client((_) => (200, order)));
+
+      final created = await repository.create(
+        annonceId: 8,
+        quantite: 2.5,
+        moyenPaiement: MoyenPaiement.wave,
+      );
+
+      expect(adapter.requests.last.path, '/commandes/');
+      expect(corps(), {
+        'annonce': 8,
+        'quantite': '2.5',
+        'moyen_paiement': 'wave',
+      });
+      expect(created.total, 2250);
+      expect(created.telephonePaiement, '770000000');
+
+      await repository.signalerPaiement(created.id);
+      expect(adapter.requests.last.path, '/commandes/31/signaler_paiement/');
+      await repository.confirmer(created.id);
+      expect(adapter.requests.last.path, '/commandes/31/confirmer/');
+    },
+  );
 
   test('parcelles : erreur de validation du serveur', () async {
     final repository = ApiParcelleRepository(
@@ -252,10 +314,7 @@ void main() {
                   },
                 ],
               )
-            : (
-                201,
-                {...options.data as Map, 'id': 5},
-              ),
+            : (201, {...options.data as Map, 'id': 5}),
       ),
     );
 

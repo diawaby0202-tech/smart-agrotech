@@ -69,16 +69,24 @@ String formatNombre(double value) => value == value.roundToDouble()
     ? value.toInt().toString()
     : value.toString().replaceAll('.', ',');
 
-/// Prix en FCFA avec séparateur de milliers : `15 000 FCFA`.
-String formatPrix(int prix) {
+String _formatMontant(int prix) {
   final chiffres = prix.toString();
   final buffer = StringBuffer();
   for (var i = 0; i < chiffres.length; i++) {
     if (i > 0 && (chiffres.length - i) % 3 == 0) buffer.write(' ');
     buffer.write(chiffres[i]);
   }
-  return '$buffer FCFA';
+  return buffer.toString();
 }
+
+/// Prix en FCFA avec séparateur de milliers : `15 000 FCFA`.
+String formatPrix(int prix) => '${_formatMontant(prix)} FCFA';
+
+/// Prix indicatif au kilogramme : `15 000 F/kg`.
+String formatPrixAuKilo(int prix) => '${_formatMontant(prix)} F/kg';
+
+String formatPrixParUnite(int prix, String unite) =>
+    '${_formatMontant(prix)} F/$unite';
 
 /// Numéro lisible : `771234567` devient `77 123 45 67`.
 String formatTelephone(String numero) {

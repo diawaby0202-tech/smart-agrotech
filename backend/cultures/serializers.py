@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from utilisateurs.models import RoleUtilisateur
+
 from .models import Parcelle, Recolte
 
 
@@ -7,10 +9,16 @@ class ParcelleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Parcelle
         fields = [
-            'id', 'nom', 'culture', 'superficie', 'localisation', 'date_semis',
-            'date_recolte_prevue', 'statut', 'notes', 'image', 'date_creation',
+            'id', 'nom', 'culture', 'superficie', 'prix_indicatif',
+            'localisation', 'date_semis', 'date_recolte_prevue', 'statut',
+            'notes', 'image', 'date_creation',
         ]
         read_only_fields = ['id', 'date_creation']
+
+    def validate_prix_indicatif(self, value):
+        if value is not None and value <= 0:
+            raise serializers.ValidationError('Le prix doit être positif.')
+        return value
 
     def validate_image(self, value):
         if value.size > 5 * 1024 * 1024:
@@ -42,7 +50,11 @@ class RecolteSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'date_creation']
 
     def validate_parcelle(self, parcelle):
-        if parcelle.proprietaire_id != self.context['request'].user.id:
+        user = self.context['request'].user
+        if (
+            user.role != RoleUtilisateur.ADMIN
+            and parcelle.proprietaire_id != user.id
+        ):
             raise serializers.ValidationError(
                 'Cette parcelle ne vous appartient pas.'
             )

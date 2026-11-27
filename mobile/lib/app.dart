@@ -13,6 +13,7 @@ import 'features/cultures/parcelle_repository.dart';
 import 'features/elevage/elevage_repository.dart';
 import 'features/marche/annonce_repository.dart';
 import 'features/marche/annonce_moderation_repository.dart';
+import 'features/marche/commande_repository.dart';
 
 class SmartAgroTechApp extends StatefulWidget {
   const SmartAgroTechApp({super.key, required this.services});
@@ -66,6 +67,7 @@ class _SmartAgroTechAppState extends State<SmartAgroTechApp> {
         Provider<ElevageRepository>.value(value: services.elevage),
         Provider<AlertesRepository>.value(value: services.alertes),
         Provider<AnnonceRepository>.value(value: services.annonces),
+        Provider<CommandeRepository>.value(value: services.commandes),
         Provider<AnnonceModerationRepository>.value(
           value: services.annoncesModerees,
         ),

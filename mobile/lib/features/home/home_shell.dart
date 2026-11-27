@@ -29,10 +29,7 @@ class _HomeShellState extends State<HomeShell> {
     if (_menuOuvert) {
       menuKey.currentState?.closeDrawer();
     } else if (_shell.currentIndex != 0) {
-      final role = context.read<AuthProvider>().user?.role;
-      final roleLimite = role == UserRole.acheteur;
-      final brancheAccueil = roleLimite && _shell.currentIndex == 4 ? 3 : 0;
-      _shell.goBranch(brancheAccueil);
+      _shell.goBranch(0);
     }
   }
 
@@ -42,16 +39,28 @@ class _HomeShellState extends State<HomeShell> {
     final destinations = role == UserRole.acheteur
         ? const [
             (
-              branche: 3,
-              icone: Icons.cloud_outlined,
-              selectionnee: Icons.cloud,
-              label: 'Alertes',
+              branche: 0,
+              icone: Icons.home_outlined,
+              selectionnee: Icons.home,
+              label: 'Accueil',
             ),
             (
               branche: 4,
               icone: Icons.storefront_outlined,
               selectionnee: Icons.storefront,
               label: 'Marché',
+            ),
+            (
+              branche: 3,
+              icone: Icons.cloud_outlined,
+              selectionnee: Icons.cloud,
+              label: 'Alertes',
+            ),
+            (
+              branche: 5,
+              icone: Icons.person_outline,
+              selectionnee: Icons.person,
+              label: 'Profil',
             ),
           ]
         : const [

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/design.dart';
 import '../../core/format.dart';
 import '../../core/widgets.dart';
+import '../auth/auth_provider.dart';
+import '../auth/user.dart';
 import 'annonce.dart';
 import 'annonce_form_screen.dart';
+import 'commande_screen.dart';
 import 'marche_screen.dart';
 
 /// Détail d'une annonce : contact du vendeur (RF-18) ou gestion par son
@@ -43,6 +47,13 @@ class AnnonceDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final aUnTelephone = annonce.vendeurTelephone.isNotEmpty;
+    final acheteur =
+        context.watch<AuthProvider>().user?.role == UserRole.acheteur;
+    final commandable =
+        annonce.id != null &&
+        annonce.stock != null &&
+        annonce.unite != null &&
+        annonce.statut == StatutAnnonce.disponible;
 
     return Scaffold(
       appBar: AppBar(
@@ -70,7 +81,12 @@ class AnnonceDetailScreen extends StatelessWidget {
                 Text(annonce.titre, style: theme.textTheme.headlineSmall),
                 const SizedBox(height: 4),
                 Text(
-                  formatPrix(annonce.prix),
+                  annonce.unite == null
+                      ? formatPrix(annonce.prix)
+                      : formatPrixParUnite(
+                          annonce.prix,
+                          annonce.unite!.label,
+                        ),
                   style: theme.textTheme.titleLarge?.copyWith(
                     color: theme.colorScheme.primary,
                   ),
@@ -121,6 +137,26 @@ class AnnonceDetailScreen extends StatelessWidget {
                 ),
                 if (!annonce.estProprietaire && aUnTelephone) ...[
                   const SizedBox(height: 16),
+                  if (acheteur && commandable)
+                    FilledButton.icon(
+                      key: const Key('annonce-commander'),
+                      onPressed: () => Navigator.of(context).push<void>(
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              AchatAnnonceScreen(annonce: annonce),
+                        ),
+                      ),
+                      icon: const Icon(Icons.shopping_bag_outlined),
+                      label: const Text('Commander'),
+                    ),
+                  if (acheteur && !commandable)
+                    const Encadre(
+                      icone: Icons.info_outline,
+                      texte:
+                          'Cette annonce ne permet pas encore de commander. '
+                          'Contactez le vendeur pour qu’il complète son stock.',
+                    ),
+                  if (acheteur && commandable) const SizedBox(height: 8),
                   FilledButton.icon(
                     key: const Key('annonce-appeler'),
                     onPressed: () => _contacter(context, 'tel'),

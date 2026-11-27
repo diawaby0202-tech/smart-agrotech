@@ -6,6 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from utilisateurs.models import RoleUtilisateur
+
 from .models import Animal, SuiviReproduction, SuiviSanitaire
 from .serializers import (
     AnimalSerializer,
@@ -20,7 +22,11 @@ class AnimalViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = Animal.objects.filter(proprietaire=self.request.user)
+        qs = (
+            Animal.objects.all()
+            if self.request.user.role == RoleUtilisateur.ADMIN
+            else Animal.objects.filter(proprietaire=self.request.user)
+        )
         espece = self.request.query_params.get('espece')
         if espece:
             qs = qs.filter(espece__icontains=espece)
@@ -36,7 +42,9 @@ class SuiviSanitaireViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = SuiviSanitaire.objects.filter(animal__proprietaire=self.request.user)
+        qs = SuiviSanitaire.objects.all()
+        if self.request.user.role != RoleUtilisateur.ADMIN:
+            qs = qs.filter(animal__proprietaire=self.request.user)
         animal = self.request.query_params.get('animal')
         if animal:
             qs = qs.filter(animal_id=animal)
@@ -63,9 +71,9 @@ class SuiviReproductionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = SuiviReproduction.objects.filter(
-            animal__proprietaire=self.request.user
-        ).select_related('animal')
+        qs = SuiviReproduction.objects.select_related('animal')
+        if self.request.user.role != RoleUtilisateur.ADMIN:
+            qs = qs.filter(animal__proprietaire=self.request.user)
         animal = self.request.query_params.get('animal', '')
         if animal.isdigit():
             qs = qs.filter(animal_id=int(animal))

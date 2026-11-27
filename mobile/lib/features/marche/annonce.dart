@@ -31,6 +31,27 @@ enum StatutAnnonce {
       values.firstWhere((s) => s.apiValue == value, orElse: () => disponible);
 }
 
+enum UniteAnnonce {
+  kg('kg', 'kg'),
+  tonne('tonne', 'tonne'),
+  sac('sac', 'sac'),
+  caisse('caisse', 'caisse'),
+  tete('tete', 'tête'),
+  piece('piece', 'pièce');
+
+  const UniteAnnonce(this.apiValue, this.label);
+
+  final String apiValue;
+  final String label;
+
+  static UniteAnnonce? fromApi(Object? value) {
+    for (final unite in values) {
+      if (unite.apiValue == value) return unite;
+    }
+    return null;
+  }
+}
+
 /// Annonce de vente sur le marché agricole (RF-16).
 class Annonce {
   const Annonce({
@@ -40,6 +61,8 @@ class Annonce {
     required this.categorie,
     required this.prix,
     this.quantite = '',
+    this.stock,
+    this.unite,
     this.zone = '',
     this.photoUrl = '',
     this.statut = StatutAnnonce.disponible,
@@ -59,6 +82,9 @@ class Annonce {
 
   /// Texte libre : « 50 kg », « 3 têtes ».
   final String quantite;
+  /// Stock structuré; les anciennes annonces conservent uniquement [quantite].
+  final double? stock;
+  final UniteAnnonce? unite;
   final String zone;
 
   /// Adresse de la photo : image envoyée au serveur, sinon lien externe.
@@ -80,6 +106,8 @@ class Annonce {
       categorie: CategorieAnnonce.fromApi(json['categorie']),
       prix: parseDouble(json['prix']).round(),
       quantite: json['quantite'] as String? ?? '',
+      stock: json['stock'] == null ? null : parseDouble(json['stock']),
+      unite: UniteAnnonce.fromApi(json['unite']),
       zone: json['zone'] as String? ?? '',
       photoUrl: image.isNotEmpty ? image : json['photo'] as String? ?? '',
       statut: StatutAnnonce.fromApi(json['statut']),
@@ -97,6 +125,8 @@ class Annonce {
     'categorie': categorie.apiValue,
     'prix': prix,
     'quantite': quantite,
+    if (stock != null) 'stock': stock,
+    if (unite != null) 'unite': unite!.apiValue,
     'zone': zone,
     'statut': statut.apiValue,
   };
@@ -115,6 +145,8 @@ class Annonce {
     categorie: categorie,
     prix: prix,
     quantite: quantite,
+    stock: stock,
+    unite: unite,
     zone: zone,
     photoUrl: photoUrl ?? this.photoUrl,
     statut: statut,

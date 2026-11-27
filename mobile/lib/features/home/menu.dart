@@ -26,8 +26,6 @@ class BarreMarque extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final role = context.watch<AuthProvider>().user?.role;
-    final roleLimite = role == UserRole.acheteur;
     return AppBar(
       titleSpacing: 0,
       leading: IconButton(
@@ -38,13 +36,12 @@ class BarreMarque extends StatelessWidget implements PreferredSizeWidget {
       ),
       title: const NomMarque(),
       actions: [
-        if (!roleLimite)
-          IconButton(
-            key: const Key('profil'),
-            tooltip: 'Mon profil',
-            icon: const Icon(Icons.account_circle_outlined),
-            onPressed: () => ouvrirProfil(context),
-          ),
+        IconButton(
+          key: const Key('profil'),
+          tooltip: 'Mon profil',
+          icon: const Icon(Icons.account_circle_outlined),
+          onPressed: () => ouvrirProfil(context),
+        ),
       ],
     );
   }
@@ -103,7 +100,8 @@ class MenuPrincipal extends StatelessWidget {
     final user = auth.user;
     final roleLimite = user?.role == UserRole.acheteur;
     final ongletsVisibles = onglets.where(
-      (onglet) => !roleLimite || onglet.branche >= 3,
+      (onglet) =>
+          !roleLimite || onglet.branche == 0 || onglet.branche >= 3,
     );
 
     void fermerPuis(VoidCallback action) {
@@ -166,13 +164,12 @@ class MenuPrincipal extends StatelessWidget {
                 label: 'Tableau de bord',
                 onTap: () => fermerPuis(() => context.push('/tableau-de-bord')),
               ),
-            if (!roleLimite)
-              _LienMenu(
-                key: const Key('menu-profil'),
-                icone: Icons.person_outline,
-                label: 'Mon profil',
-                onTap: () => fermerPuis(() => ouvrirProfil(context)),
-              ),
+            _LienMenu(
+              key: const Key('menu-profil'),
+              icone: Icons.person_outline,
+              label: 'Mon profil',
+              onTap: () => fermerPuis(() => ouvrirProfil(context)),
+            ),
             if (user?.role == UserRole.admin)
               _LienMenu(
                 key: const Key('menu-moderation-annonces'),

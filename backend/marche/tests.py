@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 
-from .models import Annonce
+from .models import Annonce, Commande, StatutCommande
 
 User = get_user_model()
 
@@ -79,6 +79,100 @@ class AnnonceTests(APITestCase):
     def test_mes_annonces(self):
         self.client.force_authenticate(self.u2)
         self.assertEqual(len(self.client.get(self.url + 'mes_annonces/').json()), 2)
+
+
+class CommandeTests(APITestCase):
+    def setUp(self):
+        self.vendeur = creer('vendeur@x.com')
+        self.acheteur = User.objects.create_user(
+            email='acheteur@x.com',
+            password='Passw0rd!x',
+            nom='Acheteur',
+            prenom='Aminata',
+            role='acheteur',
+        )
+        self.annonce = Annonce.objects.create(
+            vendeur=self.vendeur,
+            titre='Mil local',
+            categorie='cereales',
+            prix=900,
+            quantite='10 kg',
+            stock=10,
+            unite='kg',
+        )
+        self.url = '/api/commandes/'
+
+    def test_commande_et_signalement_puis_confirmation(self):
+        self.client.force_authenticate(self.acheteur)
+        response = self.client.post(
+            self.url,
+            {
+                'annonce': self.annonce.id,
+                'quantite': '2.5',
+                'moyen_paiement': 'wave',
+            },
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['total'], '2250')
+        self.assertEqual(response.json()['telephone_paiement'], '770000000')
+        commande_id = response.json()['id']
+
+        self.client.post(f'{self.url}{commande_id}/signaler_paiement/')
+        commande = Commande.objects.get(pk=commande_id)
+        self.assertEqual(commande.statut, StatutCommande.PAIEMENT_SIGNALE)
+
+        self.client.force_authenticate(self.vendeur)
+        response = self.client.post(f'{self.url}{commande_id}/confirmer/')
+        self.assertEqual(response.status_code, 200)
+        self.annonce.refresh_from_db()
+        self.assertEqual(self.annonce.stock, 7.5)
+        self.assertEqual(
+            Commande.objects.get(pk=commande_id).statut,
+            StatutCommande.CONFIRMEE,
+        )
+
+    def test_reserve_le_stock_et_refuse_un_deuxieme_achat_excessif(self):
+        self.client.force_authenticate(self.acheteur)
+        payload = {
+            'annonce': self.annonce.id,
+            'quantite': '6',
+            'moyen_paiement': 'orange_money',
+        }
+        self.assertEqual(self.client.post(self.url, payload).status_code, 201)
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Commande.objects.count(), 1)
+
+    def test_ancienne_annonce_sans_stock_structure_non_commandable(self):
+        self.annonce.stock = None
+        self.annonce.unite = ''
+        self.annonce.save()
+        self.client.force_authenticate(self.acheteur)
+        response = self.client.post(
+            self.url,
+            {
+                'annonce': self.annonce.id,
+                'quantite': 1,
+                'moyen_paiement': 'wave',
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_seul_le_vendeur_confirme(self):
+        self.client.force_authenticate(self.acheteur)
+        response = self.client.post(
+            self.url,
+            {
+                'annonce': self.annonce.id,
+                'quantite': 1,
+                'moyen_paiement': 'wave',
+            },
+        )
+        self.client.post(f"{self.url}{response.json()['id']}/signaler_paiement/")
+        self.assertEqual(
+            self.client.post(f"{self.url}{response.json()['id']}/confirmer/").status_code,
+            403,
+        )
 
 
 class ModerationAdminTests(APITestCase):

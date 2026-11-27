@@ -13,6 +13,7 @@ import 'annonce.dart';
 import 'annonce_detail_screen.dart';
 import 'annonce_form_screen.dart';
 import 'annonce_repository.dart';
+import 'commande_screen.dart';
 
 /// Module Marché, sur le modèle de la page « Marché agricole » du site.
 class MarcheScreen extends StatefulWidget {
@@ -156,6 +157,19 @@ class _MarcheScreenState extends State<MarcheScreen> {
                       child: const Text('+ Vendre'),
                     ),
                   ],
+                  const SizedBox(width: 4),
+                  IconButton(
+                    key: const Key('marche-commandes'),
+                    tooltip: role == UserRole.acheteur
+                        ? 'Mes commandes'
+                        : 'Commandes reçues',
+                    onPressed: () => Navigator.of(context).push<void>(
+                      MaterialPageRoute(
+                        builder: (_) => const CommandesScreen(),
+                      ),
+                    ),
+                    icon: const Icon(Icons.receipt_long_outlined),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -200,15 +214,34 @@ class _MarcheScreenState extends State<MarcheScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-              for (final annonce in annonces)
-                _CarteAnnonce(
-                  annonce: annonce,
-                  onOuvrir: () =>
-                      _ouvrir(AnnonceDetailScreen(annonce: annonce)),
-                  onModifier: () =>
-                      _ouvrir(AnnonceFormScreen(annonce: annonce)),
-                  onSupprimer: () => _supprimer(annonce),
+              for (var i = 0; i < annonces.length; i += 2) ...[
+                if (i > 0) const SizedBox(height: 12),
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (var j = i; j < i + 2; j++) ...[
+                        if (j > i) const SizedBox(width: 12),
+                        if (j < annonces.length)
+                          Expanded(
+                            child: _CarteAnnonce(
+                              annonce: annonces[j],
+                              onOuvrir: () => _ouvrir(
+                                AnnonceDetailScreen(annonce: annonces[j]),
+                              ),
+                              onModifier: () => _ouvrir(
+                                AnnonceFormScreen(annonce: annonces[j]),
+                              ),
+                              onSupprimer: () => _supprimer(annonces[j]),
+                            ),
+                          )
+                        else
+                          const Spacer(),
+                      ],
+                    ],
+                  ),
                 ),
+              ],
             ],
           ),
         ),
@@ -238,67 +271,160 @@ class _CarteAnnonce extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final disponible = annonce.statut == StatutAnnonce.disponible;
+    final pastille = disponible ? annonce.zone : annonce.statut.label;
+    final detail = [
+      annonce.categorie.label,
+      if (annonce.quantite.isNotEmpty) annonce.quantite,
+    ].join(' · ');
 
-    return CartePhoto(
-      image: imageAnnonce(annonce),
-      onTap: onOuvrir,
-      badgeHaut: annonce.zone.isEmpty
-          ? null
-          : Etiquette(
-              annonce.zone,
-              fond: Colors.white,
-              couleur: Couleurs.encre,
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      color: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onOuvrir,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 1.12,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ImageSource(imageAnnonce(annonce)),
+                  if (pastille.isNotEmpty)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 120),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.94),
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                        child: Text(
+                          pastille,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: disponible ? Couleurs.encre : Couleurs.or600,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-      badgeBas: annonce.statut == StatutAnnonce.disponible
-          ? null
-          : Etiquette(
-              annonce.statut.label,
-              fond: Couleurs.or500,
-              couleur: Couleurs.encre,
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                14,
+                12,
+                annonce.estProprietaire ? 6 : 14,
+                14,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          annonce.titre,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: Couleurs.encre,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 17,
+                          ),
+                        ),
+                      ),
+                      if (annonce.estProprietaire)
+                        SizedBox(
+                          width: 28,
+                          height: 28,
+                          child: PopupMenuButton<String>(
+                            tooltip: 'Actions',
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(
+                              Icons.more_vert,
+                              size: 20,
+                              color: Couleurs.ardoise500,
+                            ),
+                            onSelected: (action) {
+                              switch (action) {
+                                case 'modifier':
+                                  onModifier();
+                                case 'supprimer':
+                                  onSupprimer();
+                              }
+                            },
+                            itemBuilder: (context) => const [
+                              PopupMenuItem(
+                                value: 'modifier',
+                                child: Text('Modifier'),
+                              ),
+                              PopupMenuItem(
+                                value: 'supprimer',
+                                child: Text('Supprimer'),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    annonce.unite == null
+                        ? formatPrix(annonce.prix)
+                        : formatPrixParUnite(
+                            annonce.prix,
+                            annonce.unite!.label,
+                          ),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: Couleurs.vert700,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    detail,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Couleurs.ardoise500,
+                      fontSize: 12,
+                    ),
+                  ),
+                  if (annonce.vendeurNom.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      annonce.vendeurNom,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Couleurs.ardoise700,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-      children: [
-        Text(
-          annonce.categorie.label,
-          style: theme.textTheme.labelMedium?.copyWith(
-            color: Couleurs.or600,
-            fontWeight: FontWeight.w700,
-          ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(annonce.titre, style: theme.textTheme.titleMedium),
-        const SizedBox(height: 4),
-        Text(
-          formatPrix(annonce.prix),
-          style: theme.textTheme.titleLarge?.copyWith(color: Couleurs.vert700),
-        ),
-        if (annonce.quantite.isNotEmpty)
-          LigneInfo(
-            Icons.inventory_2_outlined,
-            'Quantité : ${annonce.quantite}',
-          ),
-        if (annonce.vendeurNom.isNotEmpty)
-          LigneInfo(Icons.person_outline, annonce.vendeurNom),
-        if (annonce.vendeurTelephone.isNotEmpty)
-          LigneInfo(
-            Icons.call_outlined,
-            formatTelephone(annonce.vendeurTelephone),
-          ),
-        const SizedBox(height: 12),
-        if (annonce.estProprietaire)
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              BoutonCarte('Modifier', onPressed: onModifier),
-              BoutonCarte('Supprimer', danger: true, onPressed: onSupprimer),
-            ],
-          )
-        else
-          SizedBox(
-            width: double.infinity,
-            child: BoutonCarte('Contacter le vendeur', onPressed: onOuvrir),
-          ),
-      ],
+      ),
     );
   }
 }

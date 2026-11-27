@@ -24,6 +24,7 @@ class Parcelle {
     required this.nom,
     required this.culture,
     required this.superficie,
+    this.prixIndicatif,
     this.localisation = '',
     this.dateSemis,
     this.dateRecoltePrevue,
@@ -39,6 +40,10 @@ class Parcelle {
 
   /// En hectares.
   final double superficie;
+
+  /// En FCFA par kilogramme.
+  final int? prixIndicatif;
+
   final String localisation;
   final DateTime? dateSemis;
   final DateTime? dateRecoltePrevue;
@@ -51,6 +56,7 @@ class Parcelle {
     nom: json['nom'] as String? ?? '',
     culture: json['culture'] as String? ?? '',
     superficie: parseDouble(json['superficie']),
+    prixIndicatif: json['prix_indicatif'] as int?,
     localisation: json['localisation'] as String? ?? '',
     dateSemis: parseDate(json['date_semis']),
     dateRecoltePrevue: parseDate(json['date_recolte_prevue']),
@@ -63,6 +69,7 @@ class Parcelle {
     'nom': nom,
     'culture': culture,
     'superficie': superficie.toStringAsFixed(2),
+    'prix_indicatif': prixIndicatif,
     'localisation': localisation,
     'date_semis': toApiDate(dateSemis),
     'date_recolte_prevue': toApiDate(dateRecoltePrevue),
@@ -76,6 +83,7 @@ class Parcelle {
         nom: nom,
         culture: culture,
         superficie: superficie,
+        prixIndicatif: prixIndicatif,
         localisation: localisation,
         dateSemis: dateSemis,
         dateRecoltePrevue: dateRecoltePrevue,

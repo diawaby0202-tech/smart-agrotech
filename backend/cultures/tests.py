@@ -36,6 +36,19 @@ class ParcelleTests(APITestCase):
         self.assertEqual(r.status_code, 201)
         self.assertEqual(Parcelle.objects.get().proprietaire, self.u1)
 
+    def test_prix_indicatif_est_enregistre(self):
+        self.client.force_authenticate(self.u1)
+        r = self.client.post(self.url, {**self.data, 'prix_indicatif': 900})
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(r.json()['prix_indicatif'], 900)
+        self.assertEqual(Parcelle.objects.get().prix_indicatif, 900)
+
+    def test_prix_indicatif_doit_etre_positif(self):
+        self.client.force_authenticate(self.u1)
+        r = self.client.post(self.url, {**self.data, 'prix_indicatif': 0})
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('prix_indicatif', r.json())
+
     def test_creation_avec_photo(self):
         image = BytesIO()
         Image.new('RGB', (2, 2), 'green').save(image, 'PNG')
@@ -58,6 +71,21 @@ class ParcelleTests(APITestCase):
         p = Parcelle.objects.get()
         self.assertEqual(self.client.get(f'{self.url}{p.id}/').status_code, 404)
         self.assertEqual(self.client.delete(f'{self.url}{p.id}/').status_code, 404)
+
+    def test_admin_voit_les_parcelles_de_tous_les_producteurs(self):
+        Parcelle.objects.create(proprietaire=self.u1, nom='Champ A', culture='Mil', superficie=1)
+        Parcelle.objects.create(proprietaire=self.u2, nom='Champ B', culture='Riz', superficie=2)
+        admin = User.objects.create_superuser(
+            email='admin@x.com', password='Passw0rd!x', nom='Admin', prenom='A'
+        )
+        self.client.force_authenticate(admin)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(
+            {parcelle['nom'] for parcelle in response.json()},
+            {'Champ A', 'Champ B'},
+        )
 
     def test_superficie_invalide(self):
         self.client.force_authenticate(self.u1)
@@ -129,6 +157,38 @@ class RecolteTests(APITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(Recolte.objects.count(), 0)
+
+    def test_admin_voit_les_recoltes_de_tous_les_producteurs(self):
+        autre_parcelle = Parcelle.objects.create(
+            proprietaire=self.u2, nom='Champ 2', culture='Riz', superficie=1
+        )
+        Recolte.objects.create(
+            parcelle=self.parcelle, date=date.today(), quantite=10, unite='kg'
+        )
+        Recolte.objects.create(
+            parcelle=autre_parcelle, date=date.today(), quantite=20, unite='kg'
+        )
+        admin = User.objects.create_superuser(
+            email='admin-recolte@x.com',
+            password='Passw0rd!x',
+            nom='Admin',
+            prenom='A',
+        )
+        self.client.force_authenticate(admin)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(len(response.json()), 2)
+        response = self.client.post(
+            self.url,
+            {
+                'parcelle': autre_parcelle.id,
+                'date': date.today().isoformat(),
+                'quantite': '5',
+                'unite': 'kg',
+            },
+        )
+        self.assertEqual(response.status_code, 201)
 
     def test_quantite_invalide(self):
         self.client.force_authenticate(self.u1)

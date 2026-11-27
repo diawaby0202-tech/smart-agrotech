@@ -3,6 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from utilisateurs.models import RoleUtilisateur
+
 from .models import Parcelle, Recolte
 from .serializers import ParcelleSerializer, RecolteSerializer
 
@@ -13,7 +15,11 @@ class ParcelleViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = Parcelle.objects.filter(proprietaire=self.request.user)
+        qs = (
+            Parcelle.objects.all()
+            if self.request.user.role == RoleUtilisateur.ADMIN
+            else Parcelle.objects.filter(proprietaire=self.request.user)
+        )
         statut = self.request.query_params.get('statut')
         if statut:
             qs = qs.filter(statut=statut)
@@ -40,9 +46,9 @@ class RecolteViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = Recolte.objects.filter(
-            parcelle__proprietaire=self.request.user
-        ).select_related('parcelle')
+        qs = Recolte.objects.select_related('parcelle')
+        if self.request.user.role != RoleUtilisateur.ADMIN:
+            qs = qs.filter(parcelle__proprietaire=self.request.user)
         parcelle = self.request.query_params.get('parcelle', '')
         if parcelle.isdigit():
             qs = qs.filter(parcelle_id=int(parcelle))

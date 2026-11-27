@@ -59,6 +59,52 @@ class ElevageTests(APITestCase):
         self.assertEqual(self.client.get('/api/animaux/').json(), [])
         self.assertEqual(self.client.get(f'/api/animaux/{self.animal.id}/').status_code, 404)
 
+    def test_admin_voit_animaux_et_suivis_de_tous_les_producteurs(self):
+        autre_animal = Animal.objects.create(
+            proprietaire=self.u2, espece='Ovin', effectif=3
+        )
+        SuiviSanitaire.objects.create(
+            animal=self.animal, type='vaccination', date=date.today()
+        )
+        SuiviSanitaire.objects.create(
+            animal=autre_animal, type='visite', date=date.today()
+        )
+        SuiviReproduction.objects.create(
+            animal=autre_animal, date_saillie=date.today()
+        )
+        admin = User.objects.create_superuser(
+            email='admin-elevage@x.com',
+            password='Passw0rd!x',
+            nom='Admin',
+            prenom='A',
+        )
+        self.client.force_authenticate(admin)
+
+        self.assertEqual(len(self.client.get('/api/animaux/').json()), 2)
+        self.assertEqual(
+            len(self.client.get('/api/suivis-sanitaires/').json()), 2
+        )
+        self.assertEqual(
+            len(self.client.get('/api/suivis-reproduction/').json()), 1
+        )
+        response = self.client.post(
+            '/api/suivis-sanitaires/',
+            {
+                'animal': autre_animal.id,
+                'type': 'vaccination',
+                'date': date.today().isoformat(),
+            },
+        )
+        self.assertEqual(response.status_code, 201)
+        response = self.client.post(
+            '/api/suivis-reproduction/',
+            {
+                'animal': autre_animal.id,
+                'date_saillie': date.today().isoformat(),
+            },
+        )
+        self.assertEqual(response.status_code, 201)
+
     def test_suivi_sur_animal_d_autrui_refuse(self):
         self.client.force_authenticate(self.u2)
         r = self.client.post('/api/suivis-sanitaires/', {

@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from utilisateurs.models import RoleUtilisateur
+
 from .models import Animal, SuiviReproduction, SuiviSanitaire
 
 
@@ -30,7 +32,11 @@ class SuiviSanitaireSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
     def validate_animal(self, animal):
-        if animal.proprietaire != self.context['request'].user:
+        user = self.context['request'].user
+        if (
+            user.role != RoleUtilisateur.ADMIN
+            and animal.proprietaire_id != user.id
+        ):
             raise serializers.ValidationError("Cet animal ne vous appartient pas.")
         return animal
 
@@ -52,7 +58,11 @@ class SuiviReproductionSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'date_creation']
 
     def validate_animal(self, animal):
-        if animal.proprietaire_id != self.context['request'].user.id:
+        user = self.context['request'].user
+        if (
+            user.role != RoleUtilisateur.ADMIN
+            and animal.proprietaire_id != user.id
+        ):
             raise serializers.ValidationError("Cet animal ne vous appartient pas.")
         return animal
 

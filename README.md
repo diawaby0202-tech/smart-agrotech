@@ -75,7 +75,7 @@ Prérequis : Flutter SDK, Android Studio (émulateur) ou un téléphone Android.
 ```bash
 cd mobile
 flutter pub get
-flutter run
+flutter run 
 ```
 
 Sur l'émulateur Android, l'API locale est accessible via `http://10.0.2.2:8000`.

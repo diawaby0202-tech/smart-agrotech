@@ -13,5 +13,7 @@ void main() {
   test('prix en FCFA', () {
     expect(formatPrix(450000), '450 000 FCFA');
     expect(formatPrix(8000), '8 000 FCFA');
+    expect(formatPrixAuKilo(900), '900 F/kg');
+    expect(formatPrixAuKilo(12500), '12 500 F/kg');
   });
 }

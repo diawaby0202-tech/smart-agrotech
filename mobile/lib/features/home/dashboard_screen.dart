@@ -99,13 +99,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             : null,
         title: const NomMarque(),
         actions: [
-          if (accesComplet)
-            IconButton(
-              key: const Key('profil'),
-              tooltip: 'Mon profil',
-              icon: const Icon(Icons.account_circle_outlined),
-              onPressed: () => _ouvrirProfil(context),
-            ),
+          IconButton(
+            key: const Key('profil'),
+            tooltip: 'Mon profil',
+            icon: const Icon(Icons.account_circle_outlined),
+            onPressed: () => _ouvrirProfil(context),
+          ),
           IconButton(
             key: const Key('logout'),
             tooltip: 'Déconnexion',

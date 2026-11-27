@@ -40,8 +40,14 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
     text: widget.annonce?.prix.toString(),
   );
   late final _quantite = TextEditingController(text: widget.annonce?.quantite);
+  late final _stock = TextEditingController(
+    text: widget.annonce?.stock == null
+        ? ''
+        : formatNombre(widget.annonce!.stock!),
+  );
   late final _zone = TextEditingController(text: widget.annonce?.zone);
   late CategorieAnnonce? _categorie = widget.annonce?.categorie;
+  late UniteAnnonce? _unite = widget.annonce?.unite;
   late StatutAnnonce _statut =
       widget.annonce?.statut ?? StatutAnnonce.disponible;
 
@@ -62,6 +68,7 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
     _description.dispose();
     _prix.dispose();
     _quantite.dispose();
+    _stock.dispose();
     _zone.dispose();
     super.dispose();
   }
@@ -70,6 +77,18 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
     final prix = int.tryParse(value?.trim() ?? '');
     if (prix == null || prix < 0) return 'Prix en FCFA, sans virgule';
     return _serverErrors['prix'];
+  }
+
+  String? _validerStock(String? value) {
+    final texte = value?.trim() ?? '';
+    if (texte.isEmpty) {
+      return _isEdit && _unite == null
+          ? null
+          : 'Indiquez le stock disponible';
+    }
+    final stock = double.tryParse(texte.replaceAll(',', '.'));
+    if (stock == null || stock <= 0) return 'Stock positif attendu';
+    return _serverErrors['stock'];
   }
 
   Future<void> _choisirPhoto(ImageSource source) async {
@@ -126,7 +145,14 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
       description: _description.text.trim(),
       categorie: _categorie!,
       prix: int.parse(_prix.text.trim()),
-      quantite: _quantite.text.trim(),
+      quantite: _stock.text.trim().isNotEmpty && _unite != null
+          ? '${formatNombre(double.parse(_stock.text.trim().replaceAll(',', '.')))} '
+                '${_unite!.label}'
+          : _quantite.text.trim(),
+      stock: _stock.text.trim().isEmpty
+          ? null
+          : double.parse(_stock.text.trim().replaceAll(',', '.')),
+      unite: _unite,
       zone: _zone.text.trim(),
       statut: _statut,
       photoUrl: widget.annonce?.photoUrl ?? '',
@@ -226,19 +252,43 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
               key: const Key('annonce-prix'),
               controller: _prix,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Prix',
-                suffixText: 'FCFA',
+              decoration: InputDecoration(
+                labelText: 'Prix par unité',
+                suffixText: _unite == null
+                    ? 'FCFA'
+                    : 'FCFA/${_unite!.label}',
               ),
               validator: _validerPrix,
             ),
             const SizedBox(height: 16),
             TextFormField(
-              controller: _quantite,
-              decoration: const InputDecoration(
-                labelText: 'Quantité',
-                hintText: '50 kg, 3 têtes…',
+              key: const Key('annonce-stock'),
+              controller: _stock,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
               ),
+              decoration: const InputDecoration(
+                labelText: 'Stock disponible',
+                helperText: 'Nécessaire pour activer les commandes',
+              ),
+              validator: _validerStock,
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<UniteAnnonce>(
+              key: const Key('annonce-unite'),
+              initialValue: _unite,
+              decoration: const InputDecoration(labelText: 'Unité de vente'),
+              items: [
+                for (final unite in UniteAnnonce.values)
+                  DropdownMenuItem(value: unite, child: Text(unite.label)),
+              ],
+              onChanged: (value) => setState(() => _unite = value),
+              validator: (value) {
+                if (_stock.text.trim().isEmpty && _isEdit && value == null) {
+                  return null;
+                }
+                return value == null ? 'Choisissez une unité' : null;
+              },
             ),
             const SizedBox(height: 16),
             TextFormField(
